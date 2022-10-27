@@ -1,0 +1,26 @@
+[60831] Log opened at 2021-12-11 10:24:17.486054
+[60831] [Step Debug] INFO: Connecting to configured address/port: 127.0.0.1:43733.
+[60831] [Step Debug] INFO: Connected to debugging client: 127.0.0.1:43733 (through xdebug.client_host/xdebug.client_port). :-)
+[60831] [Step Debug] -> <init xmlns="urn:debugger_protocol_v1" xmlns:xdebug="https://xdebug.org/dbgp/xdebug" fileuri="file:///home/data/http/workspace/apousiologos-tailwind/app/Http/Controllers/ApousiologosController.php" language="PHP" xdebug:language_version="8.0.12" protocol_version="1.0" appid="60831" idekey="VSCODE"><engine version="3.1.1"><![CDATA[Xdebug]]></engine><author><![CDATA[Derick Rethans]]></author><url><![CDATA[https://xdebug.org]]></url><copyright><![CDATA[Copyright (c) 2002-2021 by Derick Rethans]]></copyright></init>
+
+[60831] [Step Debug] <- feature_set -i 1 -n resolved_breakpoints -v 1
+[60831] [Step Debug] -> <response xmlns="urn:debugger_protocol_v1" xmlns:xdebug="https://xdebug.org/dbgp/xdebug" command="feature_set" transaction_id="1" feature="resolved_breakpoints" success="1"></response>
+
+[60831] [Step Debug] <- feature_set -i 2 -n notify_ok -v 1
+[60831] [Step Debug] -> <response xmlns="urn:debugger_protocol_v1" xmlns:xdebug="https://xdebug.org/dbgp/xdebug" command="feature_set" transaction_id="2" feature="notify_ok" success="1"></response>
+
+[60831] [Step Debug] <- feature_set -i 3 -n extended_properties -v 1
+[60831] [Step Debug] -> <response xmlns="urn:debugger_protocol_v1" xmlns:xdebug="https://xdebug.org/dbgp/xdebug" command="feature_set" transaction_id="3" feature="extended_properties" success="1"></response>
+
+[60831] [Step Debug] <- run -i 4
+[60831] [Step Debug] -> <notify xmlns="urn:debugger_protocol_v1" xmlns:xdebug="https://xdebug.org/dbgp/xdebug" name="error"><xdebug:message filename="file:///home/data/http/workspace/apousiologos-tailwind/app/Http/Controllers/ApousiologosController.php" lineno="16" type="Fatal error"><![CDATA[Uncaught Error: Class "App\Http\Controllers\Controller" not found]]></xdebug:message></notify>
+
+[60831] [Step Debug] -> <notify xmlns="urn:debugger_protocol_v1" xmlns:xdebug="https://xdebug.org/dbgp/xdebug" name="error"><xdebug:message filename="file:///home/data/http/workspace/apousiologos-tailwind/app/Http/Controllers/ApousiologosController.php" lineno="16" type="Fatal error"><![CDATA[Uncaught Error: Class "App\Http\Controllers\Controller" not found]]></xdebug:message></notify>
+
+[60831] [Step Debug] -> <response xmlns="urn:debugger_protocol_v1" xmlns:xdebug="https://xdebug.org/dbgp/xdebug" command="run" transaction_id="4" status="stopping" reason="ok"></response>
+
+[60831] [Step Debug] <- stop -i 5
+[60831] [Step Debug] -> <response xmlns="urn:debugger_protocol_v1" xmlns:xdebug="https://xdebug.org/dbgp/xdebug" command="stop" transaction_id="5" status="stopped" reason="ok"></response>
+
+[60831] Log closed at 2021-12-11 10:24:17.900606
+
