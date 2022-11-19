@@ -158,6 +158,13 @@ class DatabaseSeeder extends Seeder
             'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
+        DB::table('settings')->insert([
+            'key' => 'allowExams',
+            'value' => 1,
+            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        ]);
+
         DB::table('programs')->insert([
             'id' => 1,
             'start' => 815,

@@ -52,11 +52,15 @@
 
             <div
               class="hidden space-x-8 md:-my-px md:ml-10 md:flex"
-              v-show="
-                $page.props.auth.user
-                  ? $page.props.auth.user.permissions.teacherOrAdmin
-                  : false
-              "
+          v-show="
+            ($page.props.auth.user
+              ? $page.props.auth.user.permissions.admin
+              : false) ||
+            ($page.props.allowExams &&
+              ($page.props.auth.user
+                ? $page.props.auth.user.permissions.teacher
+                : false))
+          "
             >
               <BreezeNavLink
                 :href="route('exams')"
@@ -253,9 +257,13 @@
         </div>
         <div
           v-show="
-            $page.props.auth.user
-              ? $page.props.auth.user.permissions.teacherOrAdmin
-              : false
+            ($page.props.auth.user
+              ? $page.props.auth.user.permissions.admin
+              : false) ||
+            ($page.props.allowExams &&
+              ($page.props.auth.user
+                ? $page.props.auth.user.permissions.teacher
+                : false))
           "
         >
           <BreezeResponsiveNavLink

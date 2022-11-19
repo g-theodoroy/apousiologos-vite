@@ -43,7 +43,8 @@ class HandleInertiaRequests extends Middleware
                 'message' => fn () => $request->session()->get('message'),
             ],
             'schoolName' => $settings['schoolName'] ?? null,
-            'activeGradesPeriod' => $settings['activeGradePeriod'] !== '0' ?? false
+            'activeGradesPeriod' => $settings['activeGradePeriod'] !== '0' ?? false,
+            'allowExams' => isset($settings['allowExams']) ? $settings['allowExams'] == '1' : false
         ]);
     }
 }

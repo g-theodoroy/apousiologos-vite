@@ -514,7 +514,6 @@
           class="
             font-semibold
             text-xl
-            p-2
             bg-gray-100
             rounded-t-md
             mx-4
@@ -528,7 +527,7 @@
           <div
             class="grid grid-cols-1 gap-1"
             :class="{
-              'md:grid-cols-8': !$page.props.auth.user.permissions.admin,
+              'md:grid-cols-9': !$page.props.auth.user.permissions.admin,
               'md:grid-cols-12': $page.props.auth.user.permissions.admin,
             }"
           >

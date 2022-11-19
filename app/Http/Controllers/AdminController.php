@@ -44,7 +44,8 @@ class AdminController extends Controller
             'allowTeachersSaveAtNotActiveHour',
             'showFutureHours',
             'allowWeekends',
-            'showOtherGrades'
+            'showOtherGrades',
+            'allowExams',
         ];
 
         $settings = Setting::getValues();
@@ -84,6 +85,8 @@ class AdminController extends Controller
         Setting::setValueOf('pastDaysInsertApousies', request('pastDaysInsertApousies'));
         Setting::setValueOf('gradeBaseAlert', request('gradeBaseAlert'));
         Setting::setValueOf('landingPage', request('landingPage'));
+        $val = request('allowExams') ? 1 : null;
+        Setting::setValueOf('allowExams', $val);
         return redirect()->route('settings')->with(['message' => ['success' => 'Επιτυχής ενημέρωση.']]);
     }
 

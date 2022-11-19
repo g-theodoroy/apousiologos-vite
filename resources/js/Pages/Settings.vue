@@ -62,6 +62,7 @@
                   >
                     <option value="apousiologos">Απουσιολόγος</option>
                     <option value="exams">Διαγωνίσματα</option>
+                    <option value="grades">Βαθμολογία</option>
                   </select>
                 </SettingsContainer>
                 <SettingsContainer label="Όνομα σχολείου">
@@ -130,6 +131,14 @@
               </SettingsPanel>
 
               <SettingsPanel title="Διαγωνίσματα" :button="true">
+                <SettingsCheckboxContainer
+                  label="Επιτρέπεται η καταχώριση διαγωνισμάτων"
+                >
+                  <BreezeCheckbox
+                    v-model="settings.allowExams"
+                    :checked="initialSettings.allowExams"
+                  />
+                </SettingsCheckboxContainer>
                 <SettingsContainer label="Επιτρεπόμενα διαγωνίσματα την ημέρα">
                   <BreezeInput
                     class="gth"

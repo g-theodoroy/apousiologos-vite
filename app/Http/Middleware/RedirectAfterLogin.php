@@ -22,11 +22,33 @@ class RedirectAfterLogin
      */
     public function handle(Request $request, Closure $next)
     {
-        // Αν έχουν επιλέξει Διαγωνίσματα $route = 'exams'; και δεν είναι μαθητές
         $route = Setting::getValueOf('landingPage');
-        if ($route == 'exams' && basename(request()->headers->get('referer')) == 'login' && request()->user()->permissions['teacherOrAdmin']) {
-            return redirect()->route($route);
+        $activeGradePeriod = Setting::getValueOf('activeGradePeriod');
+        $allowExams = Setting::getValueOf('allowExams');
+
+        // μετά από login
+        if (basename(request()->headers->get('referer')) == 'login') {
+
+            // αν είναι admin ελεύθερα
+            if(request()->user()->permissions['admin']){
+                return redirect()->route($route);
+            }
+
+            // αν είναι δάσκαλος
+            if (request()->user()->permissions['teacher']) {
+                // αν επιτρέπεται η καταχώριση διαγωνισμάτων
+                if ($route == 'exams' &&  $allowExams == 1 ) {
+                    return redirect()->route($route);
+                }
+                // αν υπάρχει ενεργή περίοδος
+                if ($route == 'grades' && $activeGradePeriod <> 0 ) {
+                    return redirect()->route($route);
+                }
+
+            }
+   
         }
+
         // αλλιώς στον απουσιολόγο
         return $next($request);
     }
