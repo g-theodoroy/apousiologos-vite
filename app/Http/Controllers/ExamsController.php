@@ -23,7 +23,6 @@ class ExamsController extends Controller
     public function __construct()
     {
         $this->middleware('auth');
-        //$this->middleware('allow.calendar');
     }
 
     public function index()

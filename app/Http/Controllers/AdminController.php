@@ -46,10 +46,17 @@ class AdminController extends Controller
             'allowWeekends',
             'showOtherGrades',
             'allowExams',
+            'allowTeachersEmail',
         ];
 
         $settings = Setting::getValues();
-        foreach ($keys as $key)  $settings[$key] = $settings[$key] == 1 ?? false;
+        foreach ($keys as $key) {
+            if(array_key_exists($key, $settings)){
+                $settings[$key] = $settings[$key] == 1 ?? false;
+            }else{
+                $settings[$key] = false;
+            }
+        }
 
         // ddd($settings);
 
@@ -87,6 +94,8 @@ class AdminController extends Controller
         Setting::setValueOf('landingPage', request('landingPage'));
         $val = request('allowExams') ? 1 : null;
         Setting::setValueOf('allowExams', $val);
+        $val = request('allowTeachersEmail') ? 1 : null;
+        Setting::setValueOf('allowTeachersEmail', $val);
         return redirect()->route('settings')->with(['message' => ['success' => 'Επιτυχής ενημέρωση.']]);
     }
 

@@ -5,6 +5,7 @@ use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\ExamsController;
 use App\Http\Controllers\GradeController;
@@ -24,25 +25,29 @@ use App\Http\Controllers\ApousiologosController;
 */
 
 Route::get('/', function () {
-    $isAdmin = Auth::user() ? Auth::user()->permissions['admin'] : false;
-    $isTeacher = Auth::user() ? Auth::user()->permissions['teacher'] : false;
-    $isStudent = Auth::user() ? Auth::user()->permissions['student'] : false;
-    // βρίσκω την αρχική σελίδα
-    $landingPage = Setting::getValueOf('landingPage');
-    if($isStudent){
+
+    if(Schema::hasTable('settings')){
+        $isTeacher = Auth::user() ? Auth::user()->permissions['teacher'] : false;
+        $isStudent = Auth::user() ? Auth::user()->permissions['student'] : false;
+        // βρίσκω την αρχική σελίδα
+        $landingPage = Setting::getValueOf('landingPage');
+        if ($isStudent) {
+            $landingPage = 'apousiologos';
+        } elseif ($isTeacher) {
+            if ($landingPage == 'exams') {
+                $allowExams = Setting::getValueOf('allowExams') == '1' ?? false;
+                if (!$allowExams) $landingPage = 'apousiologos';
+            }
+            if ($landingPage == 'grades') {
+                $activeGradePeriod = Setting::getValueOf('activeGradePeriod') <> 0 ?? false;
+                if (!$activeGradePeriod) $landingPage = 'apousiologos';
+            }
+        }
+    }else{
         $landingPage = 'apousiologos';
-    }elseif($isTeacher){
-        if ($landingPage == 'exams') {
-            $allowExams = Setting::getValueOf('allowExams') == '1' ?? false;
-            if (!$allowExams) $landingPage = 'apousiologos';
-        }
-        if ($landingPage == 'grades') {
-            $activeGradePeriod = Setting::getValueOf('activeGradePeriod') <> 0 ?? false;
-            if (!$activeGradePeriod) $landingPage = 'apousiologos';
-        }
-        
     }
-     return Inertia::render('Welcome', [
+
+    return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,

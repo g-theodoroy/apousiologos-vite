@@ -6,6 +6,7 @@ use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Grade;
 use App\Models\Anathesi;
+use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -215,9 +216,12 @@ class TeachersController extends Controller
   {
     User::where('id', $id)->delete();
     Anathesi::where('user_id', $id)->delete();
+    Event::where('user_id', $id)->delete();
     return redirect()->back()->with(['message' => 'Επιτυχής διαγραφή καθηγητή.']);
   }
 
+  // Το χρησιμοποιώ με axios.get στο Teachers.vue
+  // για να διαπιστώσω άν το email είναι ελεύθερο για νέα εγγραφή 
   public function uniqueEmail($email)
   {
     return User::where('email', $email)->first() ? 1 : 0;

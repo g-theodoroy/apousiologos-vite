@@ -128,6 +128,14 @@
                     placeholder="ηη/μμ/εεεε"
                   />
                 </SettingsContainer>
+                <SettingsCheckboxContainer
+                  label="Οι καθηγητές μπορούν να στέλνουν email"
+                >
+                  <BreezeCheckbox
+                    v-model="settings.allowTeachersEmail"
+                    :checked="initialSettings.allowTeachersEmail"
+                  />
+                </SettingsCheckboxContainer>
               </SettingsPanel>
 
               <SettingsPanel title="Διαγωνίσματα" :button="true">

@@ -15,7 +15,6 @@
           <div class="p-6 bg-white border-b border-gray-200 space-y-4">
             <!-- ΣΥΝΔΕΣΜΟΙ ΤΜΗΜΑΤΩΝ -->
             <div
-              v-show="checkIfAllowWeekends"
               class="flex flex-wrap border border-gray-200 rounded-md p-4"
             >
               <span class="pr-4 font-medium">Επιλογή τμήματος:</span>
@@ -82,14 +81,13 @@
             </div>
             <div
               v-show="!checkIfAllowWeekends"
-              class="text-center font-semibold text-3xl text-gray-700 py-24"
+              class="text-center font-semibold text-3xl text-gray-700 py-2"
             >
               Όχι απουσίες το Σαββατοκύριακο!
             </div>
             <!-- ΚΑΡΤΕΛΑ ΤΜΗΜΑΤΟΣ -->
             <div
-              v-show="checkIfAllowWeekends"
-              class="flex flex-col rounded-md max-w-3xl mx-auto"
+               class="flex flex-col rounded-md max-w-3xl mx-auto"
             >
               <!-- ΕΠΙΚΕΦΑΛΙΔΑ ΚΑΡΤΕΛΑΣ ΤΜΗΜΑΤΟΣ -->
               <Actions
@@ -98,6 +96,7 @@
                 :checkIfInProgram="checkIfInProgram"
                 :selectedTmima="selectedTmima"
                 :showTitleAndButtons="showTitleAndButtons"
+                :checkIfAllowWeekends = "checkIfAllowWeekends"
                 @unlockHours="varHoursUnlocked = 1"
                 @apouSubmit="apouSubmit"
                 class="pt-4"
@@ -136,7 +135,7 @@
                 </div>
                 <!-- ΕΠΙΚΕΦΑΛΙΔΕΣ ΠΙΝΑΚΑ ΔΕΞΙΑ -->
                 <div
-                  v-show="checkIfInProgram"
+                  v-show="checkIfInProgram && checkIfAllowWeekends"
                   class="
                     flex
                     w-max
@@ -168,8 +167,11 @@
                     {{ index }}η
                   </div>
                   <div
-                    v-show="$page.props.auth.user.permissions.admin"
-                    class="w-14 bg-gray-200 text-center"
+                    v-show="$page.props.auth.user.permissions.teacherOrAdmin"
+                    :class="$page.props.auth.user.permissions.admin?
+                    'w-14 bg-gray-200 text-center' :
+                    'w-8 bg-gray-200 text-center'
+                    "
                   >
                     <Link
                       :href="
@@ -215,7 +217,7 @@
                 </div>
                 <!-- ΣΕΙΡΑ ΠΙΝΑΚΑ ΔΕΞΙΑ (ΚΟΥΤΙΑ)-->
                 <div
-                  v-show="checkIfInProgram"
+                  v-show="checkIfInProgram && checkIfAllowWeekends"
                   class="
                     flex
                     w-max
@@ -257,13 +259,16 @@
                     />
                   </div>
                   <div
-                    v-show="$page.props.auth.user.permissions.admin"
-                    class="w-14 bg-gray-200 text-center"
+                    v-show="$page.props.auth.user.permissions.teacherOrAdmin"
+                    :class="$page.props.auth.user.permissions.admin?
+                    'w-14 bg-gray-200 text-center' :
+                    'w-8 bg-gray-200 text-center'
+                    "
                   >
                     <Link
                       :href="route('emailParent') + `/${student.id}/${date}`"
                       v-show="
-                        $page.props.auth.user.permissions.admin &&
+                        canEmail &&
                         student.apousies &&
                         student.email
                       "
@@ -359,6 +364,7 @@ export default {
     isWeekend: Number,
     allowWeekends: Number,
     allowTeachersSaveAtNotActiveHour: Number,
+    allowTeachersEmail: Number,
     arrApousies: Object,
     allowPastDays: Boolean,
   },
@@ -454,6 +460,11 @@ export default {
         return true;
       return false;
     });
+    const canEmail = computed(function () {
+      if (usePage().props.value.auth.user.permissions.admin) return true;
+      if (usePage().props.value.auth.user.permissions.teacher && props.allowTeachersEmail == 1 ) return true;
+      return false;
+    });
 
     function apouSubmit() {
       apouForm.post(
@@ -530,6 +541,7 @@ export default {
       showTmima,
       showApousiesCheckBoxes,
       canEmailAll,
+      canEmail,
       checkCol,
       checkRow,
       varSendEmail,

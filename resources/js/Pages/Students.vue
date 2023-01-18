@@ -58,8 +58,7 @@
 
             <table
               class="
-                w-full
-                flex flex-row flex-no-wrap
+                w-full flex-row flex-no-wrap
                 bg-white
                 rounded-lg
                 overflow-hidden

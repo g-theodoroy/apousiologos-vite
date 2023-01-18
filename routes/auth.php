@@ -1,7 +1,9 @@
 <?php
 
 use App\Models\User;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -10,10 +12,9 @@ use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
-use App\Models\Setting;
 
 // Άν υπάρχει έστω και ένας Διαχειριστής (role_id == 1) απενεργοποιείται η εγγραφή
-if (!User::where('role_id', 1)->count() || Setting::getValueOf('allowRegister')) {
+if (Schema::hasTable('users') && !User::where('role_id', 1)->count() || Setting::getValueOf('allowRegister')) {
     Route::get('/register', [RegisteredUserController::class, 'create'])
         ->middleware('guest')
         ->name('register');

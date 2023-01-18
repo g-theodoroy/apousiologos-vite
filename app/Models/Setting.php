@@ -36,6 +36,7 @@ class Setting extends Model
 
     public static function getValues()
     {
+        if(! Schema::hasTable('settings')) return null;
         $confs =  Setting::all();
         $Settings = [];
         foreach ($confs as $conf) {

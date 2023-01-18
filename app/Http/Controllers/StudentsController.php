@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Anathesi;
 use DataTables;
 use Carbon\Carbon;
 use Inertia\Inertia;
 use App\Models\Tmima;
 use App\Models\Apousie;
+use App\Models\Grade;
 use App\Models\Program;
 use App\Models\Student;
 use Illuminate\Http\Request;
@@ -276,6 +278,9 @@ class StudentsController extends Controller
   {
     Student::where('id', $id)->delete();
     Tmima::where('student_id', $id)->delete();
+    Apousie::where('student_id', $id)->delete();
+    Anathesi::where('student_id', $id)->delete();
+    Grade::where('student_id', $id)->delete();
     return redirect()->back()->with(['message' => "Επιτυχής διαγραφή μαθητή/τριας"]);
   }
 

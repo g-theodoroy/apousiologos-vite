@@ -15,7 +15,7 @@
     </div>
     <!-- ΕΝΤΟΣ ΩΡΑΡΙΟΥ ΕΜΦΑΝΙΣΗ-->
     <div
-      v-show="checkIfInProgram"
+      v-show="checkIfInProgram &&  checkIfAllowWeekends"
       class="
         text-center
         space-y-1
@@ -56,6 +56,7 @@ export default {
     checkIfInProgram: Boolean,
     canUnlockHours: Boolean,
     canSave: Boolean,
+    checkIfAllowWeekends: Boolean
   },
   setup(props) {
     return {};

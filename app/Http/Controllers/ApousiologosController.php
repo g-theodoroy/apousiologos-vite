@@ -186,6 +186,7 @@ class ApousiologosController extends Controller
     }
 
     $allowTeachersSaveAtNotActiveHour = intval($settings['allowTeachersSaveAtNotActiveHour']);
+    $allowTeachersEmail = intval($settings['allowTeachersEmail'] ?? false);
 
     // Οι μαθητές δεν μπορούν  ακόμη και αν επιτρέπεται στους καθηγητές
     // να έχουν ξεκλείδωτες τις ώρες
@@ -199,12 +200,14 @@ class ApousiologosController extends Controller
       $allowWeekends = 0;
       $pastDaysInsertApousies = false;
       $allowTeachersSaveAtNotActiveHour = 0;
+      $allowTeachersEmail = 0;
     }
 
     //$activeHour = 5;
     //$letTeachersUnlockHours = 1;
     //$showFutureHours = 0;
     //$hoursUnlocked = 0;
+    //$isWeekend =1;
 
     return Inertia::render('Apousiologos', [
       'date' => $postDate,
@@ -220,6 +223,7 @@ class ApousiologosController extends Controller
       'arrApousies' => $arrApousies,
       'setCustomDate' => $setCustomDate,
       'allowTeachersSaveAtNotActiveHour' => $allowTeachersSaveAtNotActiveHour,
+      'allowTeachersEmail' => $allowTeachersEmail,
       'isWeekend' => $isWeekend,
       'allowWeekends' => $allowWeekends,
       'allowPastDays' => $pastDaysInsertApousies,
