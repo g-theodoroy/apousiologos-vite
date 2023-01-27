@@ -94,14 +94,14 @@
                     Εισαγωγή_xls
                   </button>
                   <a
-                    href="exportMathXls"
+                    href="exportStudXls"
                     as="button"
                     type="button"
                     class="gth"
                     >{{ mathCount < 1 ? "Πρότυπο_xls" : "Εξαγωγή_xls" }}</a
                   >
                   <Link
-                    href="delMath"
+                    href="delStud"
                     method="delete"
                     as="button"
                     type="button"
@@ -324,7 +324,7 @@ export default {
     });
 
     function kathSubmit() {
-      kathForm.post(route("insertUsers"), { preserveScroll: true });
+      kathForm.post(route("importKathigites"), { preserveScroll: true });
     }
 
     const mathForm = useForm({
@@ -332,7 +332,7 @@ export default {
     });
 
     function mathSubmit() {
-      mathForm.post(route("insertStudents"), { preserveScroll: true });
+      mathForm.post(route("importStudents"), { preserveScroll: true });
     }
 
     const progForm = useForm({
@@ -340,7 +340,7 @@ export default {
     });
 
     function progSubmit() {
-      progForm.post(route("insertProgram"), { preserveScroll: true });
+      progForm.post(route("importProgram"), { preserveScroll: true });
     }
 
     const apouForm = useForm({
@@ -359,7 +359,7 @@ export default {
     });
 
     function gradesSubmit() {
-      gradesForm.post(route("insertToDB"), { preserveScroll: true });
+      gradesForm.post(route("insertGradesToDB"), { preserveScroll: true });
     }
 
     return {

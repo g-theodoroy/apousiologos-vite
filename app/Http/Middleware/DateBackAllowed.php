@@ -23,7 +23,7 @@ class DateBackAllowed
         // σε μελλοντική ημερομηνία ή παρελθούσα πριν την μέγιστη επιτρεπόμενη
 
         if (!$request->date) return $next($request);
-        if (!preg_match("/^\d{4}\-\d{2}-\d{2}$/", $request->date)) return abort(404);
+        if (!preg_match("/^\d{4}\-\d{2}-\d{2}$/", $request->date)) return abort( 403, "ΛΑΝΘΑΣΜΕΝΗ ΜΟΡΦΗ ΗΜΕΡΟΜΗΝΙΑΣ");
         if (auth()->user()->role_id == 1) return $next($request);
 
         $date =   Carbon::createFromFormat("Y-m-d", $request->date)->format("Ymd");;
@@ -35,12 +35,12 @@ class DateBackAllowed
 
         // αν έχει οριστεί ημνια setcustomdate δεν επιτρέπεται άλλη
         if ($setCustomDate) {
-            $customDate = Carbon::createFromFormat("d/m/Y", $setCustomDate)->format("Ymd");
-            if ($date !== $customDate) return abort(403);
+            $customDate = Carbon::createFromFormat("Y-m-d", $setCustomDate)->format("Ymd");
+            if ($date !== $customDate) return abort(403, "ΜΗ ΕΠΙΤΡΕΠΤΗ ΗΜΕΡΟΜΗΝΙΑ");
         } else {
             // αν δεν επιτρέπεται πλοήγηση σε προηγούμενες ημέρες
             // επιτρέπεται μόνο σήμερα
-            if (!$daysBack && $date !== $today) return abort(403);
+            if (!$daysBack && $date !== $today) return abort(403, "ΜΗ ΕΠΙΤΡΕΠΤΗ ΗΜΕΡΟΜΗΝΙΑ");
         }
 
         // αν έχουν οριστεί πλοήγηση σε προγενέστερες ημνιες

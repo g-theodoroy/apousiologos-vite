@@ -3,9 +3,8 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\Request;
 use App\Models\Setting;
-use App\Providers\RouteServiceProvider;
+use Illuminate\Http\Request;
 
 class IsTeacher
 {
@@ -20,7 +19,7 @@ class IsTeacher
     {
 
         // αν ο χρήστης είναι μαθητής
-        if (request()->user()->permissions['student']) return abort(403);
+        if (request()->user()->permissions['student']) return abort(403, "ΔΕΝ ΕΠΙΤΡΕΠΕΤΑΙ Η ΠΡΟΣΒΑΣΗ ΣΕ ΧΡΗΣΤΕΣ ΜΕ ΡΟΛΟ ''STUDENT''.");
 
         // αν ο χρήστης είναι καθηγητής
         if (request()->user()->permissions['teacher']){
@@ -35,7 +34,7 @@ class IsTeacher
                 $allowExams = Setting::getValueOf('allowExams') == 1 ?? false;
 
                 // αν οχι βγάζω λάθος
-                if (!$allowExams) return abort(403);
+                if (!$allowExams) return abort(403, "ΔΕΝ ΕΠΙΤΡΕΠΕΤΑΙ Η ΚΑΤΑΧΩΡΙΣΗ ΔΙΑΓΩΝΙΣΜΑΤΩΝ.");
 
             }
 
@@ -46,7 +45,7 @@ class IsTeacher
                 $activeGradePeriod = Setting::getValueOf('activeGradePeriod') <> 0 ?? false;
 
                 // αν οχι βγάζω λάθος
-                if (!$activeGradePeriod) return abort(403);
+                if (!$activeGradePeriod) return abort(403, "ΔΕΝ ΕΠΙΤΡΕΠΕΤΑΙ Η ΚΑΤΑΧΩΡΙΣΗ ΒΑΘΜΟΛΟΓΙΑΣ.");
 
             }
 

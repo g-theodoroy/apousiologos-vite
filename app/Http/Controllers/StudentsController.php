@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Anathesi;
-use DataTables;
 use Carbon\Carbon;
 use Inertia\Inertia;
+use App\Models\Grade;
 use App\Models\Tmima;
 use App\Models\Apousie;
-use App\Models\Grade;
 use App\Models\Program;
 use App\Models\Student;
+use App\Models\Anathesi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 
 class StudentsController extends Controller
 {
@@ -237,13 +237,6 @@ class StudentsController extends Controller
     ]);
   }
 
-  public function studentUnique($id)
-  {
-    return Student::where('id', $id)->count();
-  }
-
-
-
   public function store(Request $request)
   {
     if ($this->studentUnique($request->id)) {
@@ -274,6 +267,11 @@ class StudentsController extends Controller
     return redirect()->back()->with(['message' => $message]);
   }
 
+  /**
+   * Την καλώ από Students.vue
+   * είναι το κόκκινο κουμπί με τον κάδο 
+   * στον πίνακα με τουΣ μαθητές
+   */
   public function delete($id)
   {
     Student::where('id', $id)->delete();
@@ -284,6 +282,9 @@ class StudentsController extends Controller
     return redirect()->back()->with(['message' => "Επιτυχής διαγραφή μαθητή/τριας"]);
   }
 
+  /**
+   * Την καλώ από Students.vue MODAL APOUSIES κουμπι ΑΠΟΘΗΚΕΥΣΗ
+   */
   public function apousiesStore(Request $request)
   {
     // παίρνω τα στοιχεία των απουσιών (τιμες boolean true - false)
@@ -303,9 +304,23 @@ class StudentsController extends Controller
     return redirect()->back()->with(['message' => "Επιτυχής καταχώριση απουσιών"]);
   }
 
+
+  /**
+   * Την καλώ από Students.vue με inertia.delete/${apousies.id}
+   * είναι το κόκκινο κουμπί με τον κάδο 
+   * στον υποπίνακα με τις απουσίες του μαθητή
+   */
   public function apousiesDelete($id)
   {
     Apousie::where('id', $id)->delete();
     return redirect()->back()->with(['message' => "Επιτυχής διαγραφή απουσιών"]);
   }
+
+  // Την καλώ με axios.get στο Students.vue
+  // για να διαπιστώσω άν ο am είναι ελεύθερος για νέα εγγραφή 
+  public function studentUnique($id)
+  {
+    return Student::where('id', $id)->count();
+  }
+
 }

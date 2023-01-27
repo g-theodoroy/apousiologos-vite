@@ -2,7 +2,11 @@
 
 use Inertia\Inertia;
 use App\Models\Setting;
+use App\Services\CheckUpdates;
+use App\Services\ExamsService;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ApousiologosService;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Schema;
@@ -11,7 +15,13 @@ use App\Http\Controllers\ExamsController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\TeachersController;
+use App\Http\Controllers\AdminGradesController;
+use App\Http\Controllers\AdminProgramController;
 use App\Http\Controllers\ApousiologosController;
+use App\Http\Controllers\AdminStudentsController;
+use App\Http\Controllers\AdminKathigitesController;
+use Rap2hpoutre\LaravelLogViewer\LogViewerController;
+use App\Http\Controllers\AdminMyschoolApousiesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,18 +69,30 @@ Route::get('/', function () {
 
 
 Route::get('/apousiologos/{selectedTmima?}/{date?}', [ApousiologosController::class, 'index'])->middleware(['auth', 'verified', 'redirectAfterLogin', 'dateBackAllowed'])->name('apousiologos');
-Route::post('/apousiologos/store/{selectedTmima?}/{date?}', [ApousiologosController::class, 'store'])->middleware(['auth', 'verified', 'redirectAfterLogin'])->name('apousiologos.store');
-Route::get('/emailParent/{am?}/{date?}/{tmima?}', [ApousiologosController::class, 'sendEmailToParent'])->middleware(['auth', 'verified', 'redirectAfterLogin'])->name('emailParent');
+Route::post('/apousiologos/store/{selectedTmima?}/{date?}', [ApousiologosController::class, 'store'])->middleware(['auth', 'verified'])->name('apousiologos.store');
+
+Route::get('/exportApouxls', [ApousiologosController::class, 'exportApousiesXls'])->middleware(['auth', 'verified', 'admin'])->name('exportApouxls');
+
+
+Route::get('/emailParent/{am?}/{date?}/{tmima?}', function($am, $date, $tmima = null){
+    return (new ApousiologosService)->sendEmailToParent($am, $date, $tmima);
+})->middleware(['auth', 'verified'])->name('emailParent');
 
 
 Route::get('/exams', [ExamsController::class, 'index'])->middleware(['auth', 'verified', 'teacher'])->name('exams');
 Route::post('/exams/store', [ExamsController::class, 'store'])->middleware(['auth', 'verified', 'teacher'])->name('exams.store');
 Route::put('/exams/update/{event}/{date}', [ExamsController::class, 'update'])->middleware(['auth', 'verified', 'teacher'])->name('exams.update');
-Route::get('/exams/tmimata/{date}', [ExamsController::class, 'tmimata'])->middleware(['auth', 'verified', 'teacher'])->name('tmimata');
-Route::delete('/deleteExam/{id}', [ExamsController::class, 'delete'])->middleware(['auth', 'verified', 'teacher'])->name('deleteExam');
+Route::delete('/deleteExam/{id}', [ExamsController::class, 'destroy'])->middleware(['auth', 'verified', 'teacher'])->name('deleteExam');
 
-Route::get('/exportExamsXls', [ExamsController::class, 'exportExamsXls'])->middleware(['auth', 'verified', 'admin'])->name('exportExamsXls');
-Route::get('/userExams', [ExamsController::class, 'userExams'])->middleware(['auth', 'verified', 'teacher'])->name('userExams');
+Route::get('/exams/tmimata/{date}', function($date){
+    return (new ExamsService)->tmimata($date);
+})->middleware(['auth', 'verified', 'teacher'])->name('tmimata');
+Route::get('/userExams', function () {
+    return (new ExamsService)->userExams();
+})->middleware(['auth', 'verified', 'teacher'])->name('userExams');
+Route::get('/exportExamsXls', function () {
+    return (new ExamsService)->exportExamsXls();
+})->middleware(['auth', 'verified', 'admin'])->name('exportExamsXls');
 
 
 Route::get('/grades/{selectedAnathesiId?}', [GradeController::class, 'index'])->middleware(['auth', 'verified', 'teacher', 'anathesi'])->name('grades');
@@ -94,38 +116,34 @@ Route::delete('/apousiesDelete/{id}', [StudentsController::class, 'apousiesDelet
 
 
 Route::get('/settings', [AdminController::class, 'index'])->middleware(['auth', 'verified', 'admin'])->name('settings');
-Route::post('/settings/store', [AdminController::class, 'setConfigs'])->middleware(['auth', 'verified', 'admin'])->name('settings.store');
-
-
+Route::post('/settings/store', [AdminController::class, 'store'])->middleware(['auth', 'verified', 'admin'])->name('settings.store');
 Route::get('/importXls', [AdminController::class, 'importXls'])->middleware(['auth', 'verified', 'admin'])->name('importXls');
-
-
-Route::post('/insertUsers', [AdminController::class, 'insertUsers'])->middleware(['auth', 'verified', 'admin'])->name('insertUsers');
-Route::get('/exportKathXls', [AdminController::class, 'exportKathigitesXls'])->middleware(['auth', 'verified', 'admin'])->name('exportKathXls');
-Route::delete('/delKath', [AdminController::class, 'delKathigites'])->middleware(['auth', 'verified', 'admin'])->name('delKath');
-
-
-Route::post('/insertStudents', [AdminController::class, 'insertStudents'])->middleware(['auth', 'verified', 'admin'])->name('insertStudents');
-Route::get('/exportMathXls', [AdminController::class, 'exportMathitesXls'])->middleware(['auth', 'verified', 'admin'])->name('exportMathXls');
-Route::delete('/delMath', [AdminController::class, 'delStudents'])->middleware(['auth', 'verified', 'admin'])->name('delMath');
-
-
-Route::post('/insertProgram', [AdminController::class, 'insertProgram'])->middleware(['auth', 'verified', 'admin'])->name('insertProgram');
-Route::get('/exportProgXls', [AdminController::class, 'exportProgramXls'])->middleware(['auth', 'verified', 'admin'])->name('exportProgXls');
-Route::delete('/delProg', [AdminController::class, 'delProgram'])->middleware(['auth', 'verified', 'admin'])->name('delProg');
-
-
-Route::get('/exportApouxls', [AdminController::class, 'exportApousiesXls'])->middleware(['auth', 'verified', 'admin'])->name('exportApouxls');
-
-
 Route::get('/exportXls', [AdminController::class, 'exportXls'])->middleware(['auth', 'verified', 'admin'])->name('exportXls');
-Route::get('/gradesXls', [GradeController::class, 'exportGradesXls'])->middleware(['auth', 'verified', 'admin'])->name('gradesXls');
-Route::post('/populateXls', [AdminController::class, 'populateXls'])->middleware(['auth', 'verified', 'admin'])->name('populateXls');
-Route::post('/insertToDB', [AdminController::class, 'insertToDB'])->middleware(['auth', 'verified', 'admin'])->name('insertToDB');
 
 
-Route::post('/importMyschoolApousies', [AdminController::class, 'insertMyschoolApousies'])->middleware(['auth', 'verified', 'admin'])->name('importMyschoolApousies');
-Route::get('/exportMyschoolApousies', [AdminController::class, 'exportApousiesMyschoolXls'])->middleware(['auth', 'verified', 'admin'])->name('exportMyschoolApousies');
+Route::post('/importKathigites', [AdminKathigitesController::class, 'import'])->middleware(['auth', 'verified', 'admin'])->name('importKathigites');
+Route::get('/exportKathXls', [AdminKathigitesController::class, 'export'])->middleware(['auth', 'verified', 'admin'])->name('exportKathXls');
+Route::delete('/delKath', [AdminKathigitesController::class, 'delete'])->middleware(['auth', 'verified', 'admin'])->name('delKath');
+
+
+Route::post('/importStudents', [AdminStudentsController::class, 'import'])->middleware(['auth', 'verified', 'admin'])->name('importStudents');
+Route::get('/exportStudXls', [AdminStudentsController::class, 'export'])->middleware(['auth', 'verified', 'admin'])->name('exportStudXls');
+Route::delete('/delStud', [AdminStudentsController::class, 'delete'])->middleware(['auth', 'verified', 'admin'])->name('delStud');
+
+
+Route::post('/importProgram', [AdminProgramController::class, 'import'])->middleware(['auth', 'verified', 'admin'])->name('importProgram');
+Route::get('/exportProgXls', [AdminProgramController::class, 'export'])->middleware(['auth', 'verified', 'admin'])->name('exportProgXls');
+Route::delete('/delProg', [AdminProgramController::class, 'delete'])->middleware(['auth', 'verified', 'admin'])->name('delProg');
+
+
+Route::post('/insertGradesToDB', [AdminGradesController::class, 'import'])->middleware(['auth', 'verified', 'admin'])->name('insertGradesToDB');
+Route::get('/gradesXls', [AdminGradesController::class, 'export'])->middleware(['auth', 'verified', 'admin'])->name('gradesXls');
+Route::post('/populateGradesXls', [AdminGradesController::class, 'update'])->middleware(['auth', 'verified', 'admin'])->name('populateGradesXls');
+
+
+Route::post('/importMyschoolApousies', [AdminMyschoolApousiesController::class, 'import'])->middleware(['auth', 'verified', 'admin'])->name('importMyschoolApousies');
+Route::get('/exportMyschoolApousies', [AdminMyschoolApousiesController::class, 'export'])->middleware(['auth', 'verified', 'admin'])->name('exportMyschoolApousies');
+
 
 
 Route::get('/about', function () {
@@ -136,6 +154,10 @@ Route::get('/about', function () {
 
 
 Route::get('/logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index'])->middleware(['auth', 'verified', 'admin'])->name('logs');
+
+Route::get('/setUpdated/{sha}', function ($sha) {
+    return (new CheckUpdates)->setUpdated($sha);
+})->middleware(['auth', 'verified', 'admin']);
 
 
 require __DIR__ . '/auth.php';

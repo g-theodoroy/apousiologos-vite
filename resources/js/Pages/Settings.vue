@@ -123,9 +123,9 @@
                 </SettingsContainer>
                 <SettingsContainer label=" Ορισμός Ημνιας εισαγωγής απουσιών">
                   <BreezeInput
+                    type="date"
                     class="gth"
                     v-model="settings.setCustomDate"
-                    placeholder="ηη/μμ/εεεε"
                   />
                 </SettingsContainer>
                 <SettingsCheckboxContainer

@@ -48,16 +48,13 @@
             </GthSuccess>
             <GthError property="saveError" />
             <GthInfo property="dateOutOfRange" />
+            <GthInfo property="checkUpdates" :html="true" />
             <!-- HMEROMHNIA -->
             <div class="text-center space-x-2">
               <BreezeInput
                 type="date"
                 v-model="apouForm.date"
-                :disabled="
-                  (!$page.props.auth.user.permissions.admin &&
-                    !allowPastDays) ||
-                  setCustomDate
-                "
+                :disabled="disableDatePicker()"
                 @change="
                   this.$inertia.get(
                     route('apousiologos') + `/${selectedTmima}/${apouForm.date}`
@@ -350,7 +347,7 @@ export default {
     Actions,
   },
   props: {
-    anatheseis: Array,
+    anatheseis: Object,
     date: String,
     selectedTmima: String,
     setCustomDate: String,
@@ -369,9 +366,13 @@ export default {
     allowPastDays: Boolean,
   },
   setup(props) {
+
     const varSendEmail = reactive(props.arrSendEmail);
+
     const varHoursUnlocked = ref(props.hoursUnlocked);
+    
     const apouForm = useForm(props.arrApousies);
+
     const checkIfAllowWeekends = computed(function () {
       //return false;
       if (usePage().props.value.auth.user.permissions.admin) return true;
@@ -379,6 +380,7 @@ export default {
       if (props.isWeekend == 1 && props.allowWeekends == 1) return true;
       return false;
     });
+
     const checkIfSelectedTmima = computed(function () {
       if (
         usePage().props.value.auth.user.permissions.admin &&
@@ -388,6 +390,7 @@ export default {
       if (props.selectedTmima !== "0") return true;
       return false;
     });
+
     const checkIfInProgram = computed(function () {
       if (usePage().props.value.auth.user.permissions.admin) return true;
       if (props.activeHour) return true;
@@ -400,6 +403,7 @@ export default {
       }
       return false;
     });
+
     const canUnlockHours = computed(function () {
       if (props.letTeachersUnlockHours && !varHoursUnlocked.value) return true;
       if (
@@ -411,6 +415,7 @@ export default {
       }
       return false;
     });
+
     const canSave = computed(function () {
       if (usePage().props.value.auth.user.permissions.admin) return true;
       if (props.activeHour) return true;
@@ -426,6 +431,7 @@ export default {
       }
       return false;
     });
+
     const showTitleAndButtons = computed(function () {
       if (props.selectedTmima !== "0") return true;
       if (
@@ -435,6 +441,7 @@ export default {
         return true;
       return false;
     });
+
     const showTmima = computed(function () {
       if (
         props.selectedTmima == "0" &&
@@ -443,12 +450,14 @@ export default {
         return true;
       return false;
     });
+
     const showApousiesCheckBoxes = computed(function () {
       if (usePage().props.value.auth.user.permissions.admin) return true;
       if (props.showFutureHours == 1) return true;
       if (!props.activeHour) return true;
       return false;
     });
+
     const canEmailAll = computed(function () {
       let sum = 0;
       let haveEmail = false;
@@ -460,6 +469,7 @@ export default {
         return true;
       return false;
     });
+
     const canEmail = computed(function () {
       if (usePage().props.value.auth.user.permissions.admin) return true;
       if (usePage().props.value.auth.user.permissions.teacher && props.allowTeachersEmail == 1 ) return true;
@@ -472,6 +482,7 @@ export default {
         { preserveScroll: true }
       );
     }
+
     function checkCol(index) {
       // αν μπορεί να αποθηκεύσει
       if (!this.canSave) return;
@@ -495,6 +506,7 @@ export default {
         apouForm[student.id][index] = newValue;
       });
     }
+
     function checkRow(id) {
       // μόνο ο Διαχειριστής
       if (!usePage().props.value.auth.user.permissions.admin) return;
@@ -520,11 +532,19 @@ export default {
       if(! query) return ''
       return '?st=' + query.replace(/(^,)/g, '');
     }
+
     function checkEmailChks(chkbx){
       Object.keys(varSendEmail).forEach(key => {
         varSendEmail[key] = chkbx.checked
       })
       chkbx.title = chkbx.checked ? "Αποεπιλογή όλων" : "Επιλογή όλων"
+    }
+
+    function disableDatePicker(){
+      if(usePage().props.value.auth.user.permissions.admin) return false
+      if(props.setCustomDate) return true
+      if(!props.allowPastDays) return true
+      return false
     }
 
     return {
@@ -547,6 +567,7 @@ export default {
       varSendEmail,
       createQuery,
       checkEmailChks,
+      disableDatePicker
     };
   },
 };

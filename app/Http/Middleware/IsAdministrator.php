@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use App\Providers\RouteServiceProvider;
 
 class IsAdministrator
 {
@@ -17,7 +16,7 @@ class IsAdministrator
      */
     public function handle(Request $request, Closure $next)
     {
-        if (request()->user()->role_id <> 1) return abort(403);
+        if (! request()->user()->permissions['admin']) return abort(403, "ΔΕΝ ΕΧΕΤΕ ΔΙΚΑΙΩΜΑ ΠΡΟΣΒΑΣΗΣ");
         return $next($request);
     }
 }

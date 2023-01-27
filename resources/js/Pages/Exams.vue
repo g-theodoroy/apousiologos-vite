@@ -778,6 +778,10 @@ export default {
 
     function onDrop(evt, date) {
       if (date == this.oldDate) return;
+      if(
+        !usePage().props.value.auth.user.permissions.admin && 
+        usePage().props.value.auth.user.id != JSON.parse(evt.dataTransfer.getData('exam')).user_id
+        ) return;
       if (
         !usePage().props.value.auth.user.permissions.admin &&
         props.noExams[date]

@@ -50,13 +50,13 @@ class CalendarExport implements FromCollection, WithHeadings, ShouldAutoSize, Wi
      */
     public function collection()
     {
-        $events = Event::orderBy('start')->orderBy('title');
+        $events = Event::orderBy('date')->orderBy('title');
         if ($this->start) $events = $events->where('date', '>=', $this->start);
         if ($this->end) $events = $events->where('date',   '<=', $this->end);
         $events = $events->get(['date', 'mathima',  'tmima1', 'tmima2', 'user_id']);
         foreach ($events as $event) {
             $event->user_id = User::find($event->user_id)->name ?? '';
-            $event->date = Carbon::parse($event->date)->format('d/m/Y');
+            $event->date = Carbon::createFromFormat('Ymd', $event->date)->format('d/m/Y');
         }
         return $events;
     }

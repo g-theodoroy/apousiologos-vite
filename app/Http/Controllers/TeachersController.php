@@ -4,11 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Inertia\Inertia;
+use App\Models\Event;
 use App\Models\Grade;
 use App\Models\Anathesi;
-use App\Models\Event;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 
 class TeachersController extends Controller
@@ -139,12 +140,13 @@ class TeachersController extends Controller
 
   public function store(Request $request)
   {
-    $chkTmimata = false;
     $chkMathimata = false;
 
     foreach ($request->anathesi as $anathesi) {
-      if ($anathesi['tmima']) $chkTmimata = true;
-      if ($anathesi['mathima']) $chkMathimata = true;
+      if ($anathesi['mathima']) {
+        $chkMathimata = true;
+        break;
+      }
     }
 
     //πάιρνω το role_id

@@ -54,7 +54,7 @@ class KathigitesExport implements FromCollection, WithHeadings, ShouldAutoSize, 
         if ($index == 0) {
           $arrKathigites[] = [
             'eponimo' => $data[0],
-            'onoma' => $data[1],
+            'onoma' => $data[1] ?? null,
             'email' => $kath['email'],
             'password' => '',
             'tmima' => $kath['anatheseis'][$index]['tmima'],

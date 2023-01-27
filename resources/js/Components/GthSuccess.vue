@@ -23,7 +23,8 @@
     @mouseleave="setFinalTimeOut()"
   >
     <div class="font-semibold pr-2">Ωραία!</div>
-    <div class="w-full">{{ content.value }} <slot></slot></div>
+    <div v-if="html" class="w-full"><span v-html="content.value" /> <slot></slot></div>
+    <div v-if="!html" class="w-full">{{ content.value }} <slot></slot></div>
   </div>
 </template>
 
@@ -35,6 +36,10 @@ export default {
   props: {
     property: String,
     message: String,
+    html: {
+      type: Boolean,
+      default: false,
+    }
   },
   setup(props) {
     const visible = ref(false);

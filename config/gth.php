@@ -39,4 +39,26 @@ return [
     ],
 
 
+    /**
+     * ρύθμιση αν θα γίνονται ενημερώσεις true/false
+     * διαβάζει το αρχείο .env
+     */
+    'check_updates' => env('CHECK_UPDATES', false),
+
+    /**
+     * τα κλειδιά του πίνακα settings με τιμή boolean
+     */
+    'boolean_setting_keys'  => [
+            'allowRegister',
+            'hoursUnlocked',
+            'letTeachersUnlockHours',
+            'allowTeachersSaveAtNotActiveHour',
+            'showFutureHours',
+            'allowWeekends',
+            'showOtherGrades',
+            'allowExams',
+            'allowTeachersEmail',
+        ]
+
+
 ];

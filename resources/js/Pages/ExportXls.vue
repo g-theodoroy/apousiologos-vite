@@ -80,7 +80,7 @@
                 id="frm"
                 role="form"
                 method="POST"
-                :action="route('populateXls')"
+                :action="route('populateGradesXls')"
                 enctype="multipart/form-data"
               >
                 <input type="hidden" name="_token" :value="token" />
