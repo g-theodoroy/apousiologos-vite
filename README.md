@@ -58,6 +58,26 @@ MAIL_FROM_NAME="${APP_NAME}"
 - Σε δικό σας server με **Php 8.1** ή **Php 8.2** ο composer εγκαθιστά τις βιβλιοθήκες κανονικά
 
 
+## Ενέργεια για την αποφυγή διπλού url
+
+Στο αρχείο `vendor/inertiajs/inertia-laravel/src/Response.php` και στη γραμμή **102**
+
+αλλάξτε από
+```
+            'url' => $request->getBaseUrl() . $request->getRequestUri(),
+```
+σε
+```
+            //'url' => $request->getBaseUrl() . $request->getRequestUri(),
+            'url' => $request->getRequestUri(),`
+```
+
+
+Πληροφορίες: https://stackoverflow.com/questions/71331297/laravel-inertia-vue-js-duplicates-app-url-into-url
+
+
+**ΠΑΡΑΤΗΡΗΣΗ**: Αυτή η ενέργεια θα πρέπει να γίνεται κάθε φορά που θα τρέχετε `composer install --no-dev` ή `composer update --no-dev`
+
 
 ## Ρύθμιση - χρήση
 
