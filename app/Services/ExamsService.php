@@ -17,138 +17,11 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class ExamsService {
 
-    public function tmimata($date)
-    {
-        $df = new DateFormater($date);
-        $date = $df->toDB();
-        $startOfWeek = $df->getDate()->startOfWeek()->format('Ymd');
-        $endOfWeek = $df->getDate()->endOfWeek()->format('Ymd');
-
-        $user_id = Auth::user()->id;
-
-        $maxDiagonismataForDay = Setting::getValueOf('maxDiagonismataForDay');
-        $maxDiagonismataForWeek = Setting::getValueOf('maxDiagonismataForWeek');
-
-        // βρίσκω ποια τμήματα έχουν διαγώνισμα σήμερα
-        $tmimata = Event::where('date', $date)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->select('tmima1', 'tmima2')->get();
-        $withDiagonismaForDay = collect($tmimata->toArray())->all();
-        // βρίσκω ποιοι μαθητές έχουν ήδη ένα προγραμματισμένο διαγώνισμα την ημέρα
-        $studentsWithDiagonismataForDay = $this->studentsWithMaxDiagonismata($withDiagonismaForDay, $maxDiagonismataForDay);
-
-        // βρίσκω ποια τμήματα έχουν διαγώνισμα την εβδομάδα
-        $tmimata = Event::where('date', '>=',  $startOfWeek)->where('date', '<=',  $endOfWeek)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->select('tmima1', 'tmima2')->get();
-        $withDiagonismaForWeek = collect($tmimata->toArray())->all();
-        // βρίσκω ποιοι μαθητές έχουν προγραμματισμένα συνολικά πάνω από τα επιτρεπόμενα διαγωνίσματα (3) την εβδομάδα
-        $studentsWithMaxDiagonismataForWeek = $this->studentsWithMaxDiagonismata($withDiagonismaForWeek, $maxDiagonismataForWeek);
-
-        // ποια τμήματα δεν χτυπάνε με τα προηγούμενα
-        $tmimataNonConflict = $this->tmimataNotConflict($studentsWithDiagonismataForDay, $studentsWithMaxDiagonismataForWeek);
-
-        // βρίσκω τις αναθέσεις για τον καθηγητή
-        if (Auth::user()->permissions['admin']) {
-            $anatheseis = $this->tmimataList();
-        } else {
-            $anatheseis = Anathesi::where('user_id', $user_id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->unique()->toArray();
-        }
-
-        // ποια τμήματα είναι ελεύθερα για τον καθηγητή
-        //$tmimataNonConflictForTeacher = array_unique(array_intersect($anatheseis, $tmimataNonConflict));
-        //sort($tmimataNonConflictForTeacher);
-        $tmimataNonConflictForTeacher = array_intersect($anatheseis, $tmimataNonConflict);
-
-        // Log::channel('myinfo')->info($tmimataNonConflictForTeacher);
-        if (Auth::user()->permissions['admin']) {
-            array_unshift($tmimataNonConflictForTeacher, 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ');
-        }
-
-        return  collect($tmimataNonConflictForTeacher)->toJson();
-    }
-
-    private function studentsWithMaxDiagonismata($withDiagonisma, $maxNum)
-    {
-
-        $studentsWithMaxDiagonismata = [];
-        // παίρνω τους μαθητές κάθε τμήματος
-        $studentsForTmima = $this->studentsForTmima();
-
-        $totalConflicts = array();
-        // για κάθε τμήμα με διαγώνισμα
-        foreach ($withDiagonisma as $withDia) {
-            // το 1ο τμήμα απαιτείται. Προσθέτω τους μαθητές
-            $conflicts = $studentsForTmima[$withDia['tmima1']];
-            // αν έχει επιλεγεί και 2ο τμήμα
-            if ($withDia['tmima2']) {
-                // προσθέτω τους μαθητές. Παίρνω πίνακα με μοναδικές τιμές μαθητών για κάθε ζευγάρι τμημάτων
-                $conflicts = array_unique(array_merge($conflicts, $studentsForTmima[$withDia['tmima2']]));
-            }
-            // προστίθενται όλοι οι μαθητές όσες φορές έγραψαν διαγώνισμα
-            $totalConflicts = array_merge($totalConflicts, $conflicts);
-        }
-        // πόσες φορές εμφανίζεται (γράφει) κάθε μαθητής
-        $sixnotitaOfStudents = array_count_values($totalConflicts);
-        arsort($sixnotitaOfStudents);
-        foreach ($sixnotitaOfStudents as $key => $value) {
-            // Αν εμφανίζεται >= με $maxNum μπαίνει στον πίνακα ως μη διαθέσιμος μαθητής
-            if ($value > $maxNum - 1) {
-                $studentsWithMaxDiagonismata[] = $key;
-            }
-        }
-        return $studentsWithMaxDiagonismata;
-    }
-    
-    private function studentsForTmima()
-    {
-        // παίρνω από τα τμήματα το τμήμα και το student_id
-        $stuForTmima = Tmima::orderByRaw('LENGTH(tmima)')->orderBy('tmima')->get(['tmima', 'student_id'])->toArray();
-        $studentsForTmima = array();
-        // προσθέτω για κάθε τμήμα πίνακα με τα sudent_id των μαθητών
-        foreach ($stuForTmima  as $stu) {
-            $studentsForTmima[$stu['tmima']][] = $stu['student_id'];
-        }
-        return $studentsForTmima;
-    }
-
-    private function tmimataNotConflict($withDiagonismaForDay = [], $withMaxDiagonismataForWeek = [])
-    {
-        // λίστα τμημάτων
-        $tmimata = $this->tmimataList();
-        // λίστα μαθητών κάθε τμήματος
-        $studentsForTmima = $this->studentsForTmima();
-        // ενώνω τους μαθητές που δεν πρέπει να γράψουν άλλο διαγώνισμα (για την ημέρα, για την εβδομάδα)
-        $studentsMustNotWrite = array_unique(array_merge($withDiagonismaForDay, $withMaxDiagonismataForWeek));
-        $tmimataNotConflict = array();
-
-        foreach ($tmimata as $tmima) {
-            // αν δεν υπάρχουν κοινοί μαθητές (μαθητές τμήματος, μαθητές που δεν πρέπει να γράψουν)
-            // το τμήμα είναι ελέυθερο
-            if (!count(array_intersect($studentsForTmima[$tmima], $studentsMustNotWrite))) {
-                $tmimataNotConflict[] = $tmima;
-            }
-        }
-        return $tmimataNotConflict;
-    }
-
-    private function tmimataList()
-    {
-        //dd(Tmima::select('tmima')->distinct()->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->toArray());
-        return Tmima::select('tmima')->distinct()->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->toArray();
-    }
 
 
-    private function mathimata()
-    {
-
-        $mathimata = Anathesi::select('mathima');
-        if (!Auth::user()->permissions['admin']) {
-            $mathimata = $mathimata->where('user_id', Auth::user()->id);
-        }
-
-        $mathimata = $mathimata->distinct()->orderBy('mathima')->pluck('mathima')->toArray();
-
-        return $mathimata;
-    }
-
-
+    /**
+     * την καλώ από το ExamsController.index (γρ:30) 
+     */
     public function indexCreateData(){
 
         $mathimata = $this->mathimata();
@@ -241,7 +114,10 @@ class ExamsService {
  
     }
 
-    
+
+    /**
+     * την καλώ από το ExamsController.store (γρ:41) 
+     */
     public function storeCreateData()
     {
 
@@ -271,6 +147,12 @@ class ExamsService {
         ];
     }
 
+    /**
+     * την καλώ από το ExamsController.update (γρ:66) 
+     * βρίσκει αν χτυπάνε τα τμήματα με διαγώνισμα
+     * αν χτυπάνε επιστρέφει $message λάθους
+     * αν όχι επιστρέφει null
+     */
     public function checkIfUpdateOk(Event $event, $date){
 
 
@@ -335,6 +217,9 @@ class ExamsService {
     }
 
 
+    /**
+     * την καλώ από το Exams.vue με axios(γρ:938) από το μενού Διαγωνίσματα -> Τα διαγωνίσματά μου
+     */
     public function userExams()
     {
         $year = Carbon::now()->format('Y');
@@ -372,7 +257,9 @@ class ExamsService {
         return Response::json($arrExams);
     }
 
-
+    /**
+     * την καλώ από το Exams.vue(γρ:30) από το μενού Διαγωνίσματα -> Εξαγωγή
+     */
     public function exportExamsXls()
     {
         $date = Carbon::createFromDate(request()->year, request()->month, 1);
@@ -386,5 +273,141 @@ class ExamsService {
         return Excel::download(new CalendarExport($start, $end), 'Διαγωνίσματα_από_' . $startLabel . '_έως_' . $endLabel . '.xls');
     }
 
+    /**
+     * την καλώ από το Exams.vue με axios(γρ:709) όταν γίνεται click για νέο διαγώνισμα και ανοίγει η φόρμα
+     * βρίσκει ποια τμήματα είναι διαθέσιμα για διαγώνισμα
+     */
+    public function tmimata($date)
+    {
+        $df = new DateFormater($date);
+        $date = $df->toDB();
+        $startOfWeek = $df->getDate()->startOfWeek()->format('Ymd');
+        $endOfWeek = $df->getDate()->endOfWeek()->format('Ymd');
+
+        $user_id = Auth::user()->id;
+
+        $maxDiagonismataForDay = Setting::getValueOf('maxDiagonismataForDay');
+        $maxDiagonismataForWeek = Setting::getValueOf('maxDiagonismataForWeek');
+
+        // βρίσκω ποια τμήματα έχουν διαγώνισμα σήμερα
+        $tmimata = Event::where('date', $date)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->select('tmima1', 'tmima2')->get();
+        $withDiagonismaForDay = collect($tmimata->toArray())->all();
+        // βρίσκω ποιοι μαθητές έχουν ήδη ένα προγραμματισμένο διαγώνισμα την ημέρα
+        $studentsWithDiagonismataForDay = $this->studentsWithMaxDiagonismata($withDiagonismaForDay, $maxDiagonismataForDay);
+
+        // βρίσκω ποια τμήματα έχουν διαγώνισμα την εβδομάδα
+        $tmimata = Event::where('date', '>=',  $startOfWeek)->where('date', '<=',  $endOfWeek)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->select('tmima1', 'tmima2')->get();
+        $withDiagonismaForWeek = collect($tmimata->toArray())->all();
+        // βρίσκω ποιοι μαθητές έχουν προγραμματισμένα συνολικά πάνω από τα επιτρεπόμενα διαγωνίσματα (3) την εβδομάδα
+        $studentsWithMaxDiagonismataForWeek = $this->studentsWithMaxDiagonismata($withDiagonismaForWeek, $maxDiagonismataForWeek);
+
+        // ποια τμήματα δεν χτυπάνε με τα προηγούμενα
+        $tmimataNonConflict = $this->tmimataNotConflict($studentsWithDiagonismataForDay, $studentsWithMaxDiagonismataForWeek);
+
+        // βρίσκω τις αναθέσεις για τον καθηγητή
+        if (Auth::user()->permissions['admin']) {
+            $anatheseis = $this->tmimataList();
+        } else {
+            $anatheseis = Anathesi::where('user_id', $user_id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->unique()->toArray();
+        }
+
+        // ποια τμήματα είναι ελεύθερα για τον καθηγητή
+        //$tmimataNonConflictForTeacher = array_unique(array_intersect($anatheseis, $tmimataNonConflict));
+        //sort($tmimataNonConflictForTeacher);
+        $tmimataNonConflictForTeacher = array_intersect($anatheseis, $tmimataNonConflict);
+
+        // Log::channel('myinfo')->info($tmimataNonConflictForTeacher);
+        if (Auth::user()->permissions['admin']) {
+            array_unshift($tmimataNonConflictForTeacher, 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ');
+        }
+
+        return  collect($tmimataNonConflictForTeacher)->toJson();
+    }
+
+    private function studentsWithMaxDiagonismata($withDiagonisma, $maxNum)
+    {
+
+        $studentsWithMaxDiagonismata = [];
+        // παίρνω τους μαθητές κάθε τμήματος
+        $studentsForTmima = $this->studentsForTmima();
+
+        $totalConflicts = array();
+        // για κάθε τμήμα με διαγώνισμα
+        foreach ($withDiagonisma as $withDia) {
+            // το 1ο τμήμα απαιτείται. Προσθέτω τους μαθητές
+            $conflicts = $studentsForTmima[$withDia['tmima1']];
+            // αν έχει επιλεγεί και 2ο τμήμα
+            if ($withDia['tmima2']) {
+                // προσθέτω τους μαθητές. Παίρνω πίνακα με μοναδικές τιμές μαθητών για κάθε ζευγάρι τμημάτων
+                $conflicts = array_unique(array_merge($conflicts, $studentsForTmima[$withDia['tmima2']]));
+            }
+            // προστίθενται όλοι οι μαθητές όσες φορές έγραψαν διαγώνισμα
+            $totalConflicts = array_merge($totalConflicts, $conflicts);
+        }
+        // πόσες φορές εμφανίζεται (γράφει) κάθε μαθητής
+        $sixnotitaOfStudents = array_count_values($totalConflicts);
+        arsort($sixnotitaOfStudents);
+        foreach ($sixnotitaOfStudents as $key => $value) {
+            // Αν εμφανίζεται >= με $maxNum μπαίνει στον πίνακα ως μη διαθέσιμος μαθητής
+            if ($value > $maxNum - 1) {
+                $studentsWithMaxDiagonismata[] = $key;
+            }
+        }
+        return $studentsWithMaxDiagonismata;
+    }
+
+    private function studentsForTmima()
+    {
+        // παίρνω από τα τμήματα το τμήμα και το student_id
+        $stuForTmima = Tmima::orderByRaw('LENGTH(tmima)')->orderBy('tmima')->get(['tmima', 'student_id'])->toArray();
+        $studentsForTmima = array();
+        // προσθέτω για κάθε τμήμα πίνακα με τα sudent_id των μαθητών
+        foreach ($stuForTmima  as $stu) {
+            $studentsForTmima[$stu['tmima']][] = $stu['student_id'];
+        }
+        return $studentsForTmima;
+    }
+
+    private function tmimataNotConflict($withDiagonismaForDay = [], $withMaxDiagonismataForWeek = [])
+    {
+        // λίστα τμημάτων
+        $tmimata = $this->tmimataList();
+        // λίστα μαθητών κάθε τμήματος
+        $studentsForTmima = $this->studentsForTmima();
+        // ενώνω τους μαθητές που δεν πρέπει να γράψουν άλλο διαγώνισμα (για την ημέρα, για την εβδομάδα)
+        $studentsMustNotWrite = array_unique(array_merge($withDiagonismaForDay, $withMaxDiagonismataForWeek));
+        $tmimataNotConflict = array();
+
+        foreach ($tmimata as $tmima) {
+            // αν δεν υπάρχουν κοινοί μαθητές (μαθητές τμήματος, μαθητές που δεν πρέπει να γράψουν)
+            // το τμήμα είναι ελέυθερο
+            if (!count(array_intersect($studentsForTmima[$tmima], $studentsMustNotWrite))) {
+                $tmimataNotConflict[] = $tmima;
+            }
+        }
+        return $tmimataNotConflict;
+    }
+
+    private function tmimataList()
+    {
+        //dd(Tmima::select('tmima')->distinct()->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->toArray());
+        return Tmima::select('tmima')->distinct()->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->toArray();
+    }
+
+    /**
+     * την καλώ από $this->indexCreateData (γρ:27)
+     */
+    private function mathimata()
+    {
+
+        $mathimata = Anathesi::select('mathima');
+        if (!Auth::user()->permissions['admin']) {
+            $mathimata = $mathimata->where('user_id', Auth::user()->id);
+        }
+
+        $mathimata = $mathimata->distinct()->orderBy('mathima')->pluck('mathima')->toArray();
+
+        return $mathimata;
+    }
 
 }
