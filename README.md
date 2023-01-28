@@ -81,7 +81,7 @@ MAIL_FROM_NAME="${APP_NAME}"
 
 ## Ρύθμιση - χρήση
 
-[Οδηγίες ρύθμισης κ χρήσης Ηλ.Απουσιολόγου.pdf](https://drive.google.com/file/d/17s1Oc0WNlOfuaPti7Tkr7cU3eop89RAP/view?usp=sharing)
+[Οδηγίες ρύθμισης κ χρήσης Ηλ.Απουσιολόγου.pdf](https://drive.google.com/file/d/1TrRDgVu3BTsZcATAHILY4VXC6cUVIcmP/view?usp=sharing)
 
 
 # GΘ@IAN_2023
