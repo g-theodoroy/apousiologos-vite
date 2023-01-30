@@ -7,7 +7,9 @@ use App\Models\Tmima;
 use App\Models\Setting;
 use App\Models\Student;
 use App\Models\Anathesi;
+use App\Exports\NoGradesExport;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 
 class GradesService {
@@ -97,6 +99,11 @@ class GradesService {
 
         $showOtherGrades = Setting::getValueOf('showOtherGrades') == 1 ?? false;
 
+        $insertedAnatheseisCount = Grade::where('period_id', $activeGradePeriod)->distinct('anathesi_id')->count();
+        $anatheseisCount = Anathesi::count();
+        $infoInsertedAnatheseis = $insertedAnatheseisCount ? "$insertedAnatheseisCount από $anatheseisCount" : "";
+        $infoNotInsertedAnatheseis = $anatheseisCount - $insertedAnatheseisCount; 
+
         return [
             'anatheseis' => $anatheseis,
             'selectedAnathesiId' => intval($selectedAnathesiId),
@@ -109,7 +116,9 @@ class GradesService {
             'activeGradePeriod' => $activeGradePeriod,
             'periods' => $periods,
             'showOtherGrades' => $showOtherGrades,
-            'gradeBaseAlert' => $gradeBaseAlert
+            'gradeBaseAlert' => $gradeBaseAlert,
+            'infoInsertedAnatheseis' => $infoInsertedAnatheseis,
+            'infoNotInsertedAnatheseis' => $infoNotInsertedAnatheseis
         ];
     }
 
@@ -130,4 +139,9 @@ class GradesService {
         return  $name;
     }
 
+    
+    public function noGrades(){
+
+        return Excel::download(new NoGradesExport, 'Υπολοιπόμενοι βαθμοί.xls');
+    }
 }

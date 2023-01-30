@@ -28,7 +28,7 @@ class GradeController extends Controller
 
         foreach ($data as $am => $periods) {
             $grade = $periods[$activeGradePeriod];
-            if ($grade || $grade == 0){
+            if ($grade != null ){
                 Grade::updateOrCreate([
                     'anathesi_id' => $selectedAnathesiId, 
                     'student_id' =>  $am, 

@@ -4,6 +4,7 @@ use Inertia\Inertia;
 use App\Models\Setting;
 use App\Services\CheckUpdates;
 use App\Services\ExamsService;
+use App\Services\GradesService;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Auth;
 use App\Services\ApousiologosService;
@@ -155,9 +156,15 @@ Route::get('/about', function () {
 
 Route::get('/logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index'])->middleware(['auth', 'verified', 'admin'])->name('logs');
 
+
 Route::get('/setUpdated/{sha}', function ($sha) {
     return (new CheckUpdates)->setUpdated($sha);
 })->middleware(['auth', 'verified', 'admin']);
+
+
+Route::get('/noGrades', function () {
+    return (new GradesService)->noGrades();
+})->middleware(['auth', 'verified', 'admin'])->name('noGrades');
 
 
 require __DIR__ . '/auth.php';

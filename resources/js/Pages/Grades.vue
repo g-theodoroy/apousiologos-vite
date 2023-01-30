@@ -3,9 +3,36 @@
 
   <BreezeAuthenticatedLayout>
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        Βαθμολογία
-      </h2>
+      <div
+        class="
+          flex flex-col
+          sm:flex-row
+          space-y-4
+          sm:space-y-0 sm:justify-between
+        "
+      >
+        <div
+          class="
+            text-center
+            md:text-left
+            font-semibold
+            text-xl text-gray-800
+            leading-tight
+          "
+        >
+          Βαθμολογία
+        </div>
+        <div v-show="$page.props.auth.user.permissions.admin && activeGradePeriod != 0" class="w-max self-center space-x-1 sm:space-x-2">
+          <span v-show="infoInsertedAnatheseis">Καταχωρίστηκαν {{infoInsertedAnatheseis}}&nbsp;</span>
+          <a
+            v-show="infoNotInsertedAnatheseis"
+            class="gth"
+            :href="route('noGrades')"
+          >
+            Υπολείπονται {{infoNotInsertedAnatheseis}}
+          </a>
+        </div>
+      </div>
     </template>
 
     <!-- ΕΞΩΤΕΡΙΚΟ CONTAINER -->
@@ -321,6 +348,8 @@ export default {
     periods: Object,
     showOtherGrades: Boolean,
     gradeBaseAlert: Number,
+    infoInsertedAnatheseis: String,
+    infoNotInsertedAnatheseis: Number,
   },
   setup(props) {
     const studentGrades = ref("");
@@ -345,12 +374,14 @@ export default {
       let notProperGradeMessage = "";
       props.arrStudents.forEach((student) => {
         let check = false;
-        if (gradesForm[student.id][props.activeGradePeriod]) {
+        let grade = gradesForm[student.id][props.activeGradePeriod]
+        if (grade && grade.trim()) {
+          
           // Α & Β ΤΕΤΡ όχι αριθμός εκτός από 'Δ'
           if (
             props.activeGradePeriod < 3 &&
-            isNaN(gradesForm[student.id][props.activeGradePeriod]) &&
-            gradesForm[student.id][props.activeGradePeriod] !== "Δ"
+            isNaN(grade) &&
+            grade !== "Δ"
           ) {
             //alert('Α & Β ΤΕΤΡ όχι αριθμός εκτός από Δ')
             check = true;
@@ -358,7 +389,7 @@ export default {
           // ΕΞ-ΙΟΥΝ όχι αριθμός
           if (
             props.activeGradePeriod == 3 &&
-            isNaN(gradesForm[student.id][props.activeGradePeriod].replace(',','.'))
+            isNaN(grade.replace(',','.'))
           ) {
             //alert("ΕΞ-ΙΟΥΝ όχι αριθμός");
             check = true;
@@ -366,8 +397,8 @@ export default {
           // Α & Β ΤΕΤΡ αριθμός όχι θετικός ακέραιος
          if (
             props.activeGradePeriod < 3 &&
-            !isNaN(gradesForm[student.id][props.activeGradePeriod].replace(',','.')) &&
-            !/^\d{1,2}$/.test(gradesForm[student.id][props.activeGradePeriod])
+            !isNaN(grade.replace(',','.')) &&
+            !/^\d{1,2}$/.test(grade)
           ) {
             //alert("Α & Β ΤΕΤΡ αριθμός όχι θετικός ακέραιος");
             check = true;
@@ -375,17 +406,17 @@ export default {
           // ΕΞ-ΙΟΥΝ θετικός ακέραιος ή με ένα δεκαδικό ή -1
          if (
             props.activeGradePeriod == 3 &&
-            !isNaN(gradesForm[student.id][props.activeGradePeriod].replace(',','.')) &&
-            !/^\d{1,2}(?:[\.\,]\d)?$/.test(gradesForm[student.id][props.activeGradePeriod])&&
-            parseFloat(gradesForm[student.id][props.activeGradePeriod].replace(',','.')) !== -1
+            !isNaN(grade.replace(',','.')) &&
+            !/^\d{1,2}(?:[\.\,]\d)?$/.test(grade)&&
+            parseFloat(grade.replace(',','.')) !== -1
           ) {
             //alert("ΕΞ-ΙΟΥΝ αριθμός όχι σωστος");
             check = true;
           }
           //  όχι > 20
          if (
-           !isNaN(gradesForm[student.id][props.activeGradePeriod].replace(',','.')) && 
-           gradesForm[student.id][props.activeGradePeriod].replace(',','.') > 20
+           !isNaN(grade.replace(',','.')) && 
+           grade.replace(',','.') > 20
           ) {
             //alert(">20");
             check = true;
@@ -397,7 +428,7 @@ export default {
               " " +
               student.onoma +
               ": " +
-              gradesForm[student.id][props.activeGradePeriod];
+              grade;
           }
         }
       });
@@ -423,10 +454,12 @@ export default {
       }
       let underBase = "";
       props.arrStudents.forEach((student) => {
+        let grade = gradesForm[student.id][props.activeGradePeriod]
         if (
-          gradesForm[student.id][props.activeGradePeriod] &&
-          gradesForm[student.id][props.activeGradePeriod] < props.gradeBaseAlert &&
-          parseFloat(gradesForm[student.id][props.activeGradePeriod].replace(',','.')) !== -1
+          grade &&
+          grade.trim() &&
+          grade < props.gradeBaseAlert &&
+          parseFloat(grade.replace(',','.')) !== -1
         ) {
           underBase +=
             "\n" +
@@ -434,7 +467,7 @@ export default {
             " " +
             student.onoma +
             ": " +
-            gradesForm[student.id][props.activeGradePeriod];
+            grade;
         }
       });
       let answer = true;
