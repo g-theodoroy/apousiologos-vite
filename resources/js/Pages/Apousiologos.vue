@@ -154,6 +154,7 @@
                     class="w-8 text-center pb-0.5 bg-gray-100 font-semibold"
                     :class="{
                       'bg-gray-500 text-gray-100': index === activeHour,
+                      'cursor-pointer': varHoursUnlocked || index === activeHour,
                     }"
                     :title="
                       varHoursUnlocked || index == activeHour
@@ -228,6 +229,9 @@
                   <div
                     @click="checkRow(student.id)"
                     class="w-8 text-center pb-0.5 bg-gray-200 font-semibold"
+                    :class="{
+                      'cursor-pointer': $page.props.auth.user.permissions.admin,
+                    }"
                     :title="
                       $page.props.auth.user.permissions.admin
                         ? 'Επιλογή όλων'
