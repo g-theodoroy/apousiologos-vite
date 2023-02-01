@@ -10,6 +10,7 @@ use App\Models\Anathesi;
 use App\Exports\NoGradesExport;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\NoGradesStudentsExport;
 
 
 class GradesService {
@@ -144,4 +145,12 @@ class GradesService {
 
         return Excel::download(new NoGradesExport, 'Υπολοιπόμενοι βαθμοί.xls');
     }
+
+
+    public function noGradesStudents()
+    {
+
+       return Excel::download(new NoGradesStudentsExport, 'Μαθητές χωρίς βαθμούς.xls');
+    }
+
 }

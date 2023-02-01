@@ -31,6 +31,13 @@
           >
             Υπολείπονται {{infoNotInsertedAnatheseis}}
           </a>
+          <a
+            v-show="!infoNotInsertedAnatheseis"
+            class="gth"
+            :href="route('noGradesStudents')"
+          >
+            Μαθητές χωρίς βαθμούς
+          </a>
         </div>
       </div>
     </template>

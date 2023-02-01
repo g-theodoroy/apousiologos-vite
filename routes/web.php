@@ -167,6 +167,11 @@ Route::get('/noGrades', function () {
 })->middleware(['auth', 'verified', 'admin'])->name('noGrades');
 
 
+Route::get('/noGradesStudents', function () {
+    return (new GradesService)->noGradesStudents();
+})->middleware(['auth', 'verified', 'admin'])->name('noGradesStudents');
+
+
 require __DIR__ . '/auth.php';
 
 
