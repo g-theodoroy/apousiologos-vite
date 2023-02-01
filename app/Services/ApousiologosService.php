@@ -279,7 +279,13 @@ class ApousiologosService {
                 $message .= $data['name'] . ", ";
 
                 // αν έχει ρυθμιστεί σε true καταγραφή των στοιχείων των απεσταλμένων email
-                if (config('gth.emails.log')) Log::channel('emailSent')->info(implode(', ', $data));
+                if (config('gth.emails.log')) {
+                    $data["today"] = $data["today"] ? "ΣΗΜΕΡΙΝΕΣ" : "ΠΑΡΕΛΘΟΥΣΕΣ";
+                    $data["sum"] = "ΣΥΝ: " . $data["sum"];
+                    $data["hours"] = "ΩΡΕΣ: " . $data["hours"];
+                    $data["user"] = auth()->user()->name;
+                    Log::channel('emailSent')->info(implode(', ', $data));
+                }
             } catch (Throwable $e) {
                 return redirect()->back()->with(['message' => ['saveError' => 'Ελέγξτε τις ρυθμίσεις αποστολής email.']]);
             }

@@ -37,6 +37,8 @@
 
 Ημνια & ώρα αποστολής: {{ \Carbon\Carbon::now(\App\Models\Setting::getValueOf('timeZone'))->format('d/m/Y, H:i:s') }}
 
+Αποστολέας: {{ auth()->user()->name }}
+
 ## Από τη Διεύθυνση του {{ \App\Models\Setting::getValueOf('schoolName') }}
 
 @endcomponent
