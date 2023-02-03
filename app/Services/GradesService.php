@@ -100,8 +100,13 @@ class GradesService {
 
         $showOtherGrades = Setting::getValueOf('showOtherGrades') == 1 ?? false;
 
-        $insertedAnatheseisCount = Grade::where('period_id', $activeGradePeriod)->distinct('anathesi_id')->count();
-        $anatheseisCount = Anathesi::count();
+        if(auth()->user()->permissions['admin']){
+            $insertedAnatheseisCount = Grade::where('period_id', $activeGradePeriod)->distinct('anathesi_id')->count();
+            $anatheseisCount = Anathesi::count();
+        } else{
+            $insertedAnatheseisCount = Grade::where('period_id', $activeGradePeriod)->whereIn('anathesi_id', auth()->user()->anatheseis()->pluck('id'))->distinct('anathesi_id')->count();
+            $anatheseisCount = Anathesi::where('user_id', auth()->user()->id)->count();
+        }
         $infoInsertedAnatheseis = $insertedAnatheseisCount ? "$insertedAnatheseisCount από $anatheseisCount" : "";
         $infoNotInsertedAnatheseis = $anatheseisCount - $insertedAnatheseisCount; 
 
@@ -141,13 +146,13 @@ class GradesService {
     }
 
     
-    public function noGrades(){
+    public function insertedGrades($status){
 
-        return Excel::download(new NoGradesExport, 'Υπολοιπόμενοι βαθμοί.xls');
+        return Excel::download(new NoGradesExport($status), 'Υπολοιπόμενοι βαθμοί.xls');
     }
 
 
-    public function noGradesStudents()
+    public function insertedGradesStudents()
     {
 
        return Excel::download(new NoGradesStudentsExport, 'Μαθητές χωρίς βαθμούς.xls');

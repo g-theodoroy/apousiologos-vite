@@ -303,6 +303,7 @@
                 :checkIfInProgram="checkIfInProgram"
                 :selectedTmima="selectedTmima"
                 :showTitleAndButtons="showTitleAndButtons"
+                :checkIfAllowWeekends = "checkIfAllowWeekends"
                 @unlockHours="varHoursUnlocked = 1"
                 @apouSubmit="apouSubmit"
                 class="pt-4"
@@ -368,6 +369,7 @@ export default {
     allowTeachersEmail: Number,
     arrApousies: Object,
     allowPastDays: Boolean,
+    isToday: Boolean,
   },
   setup(props) {
 
@@ -476,7 +478,7 @@ export default {
 
     const canEmail = computed(function () {
       if (usePage().props.value.auth.user.permissions.admin) return true;
-      if (usePage().props.value.auth.user.permissions.teacher && props.allowTeachersEmail == 1 ) return true;
+      if (usePage().props.value.auth.user.permissions.teacher && props.allowTeachersEmail == 1 && props.isToday ) return true;
       return false;
     });
 

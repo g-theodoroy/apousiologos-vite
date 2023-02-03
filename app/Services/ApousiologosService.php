@@ -152,6 +152,8 @@ class ApousiologosService {
         // αν η ημέρα είναι διαφορετική από σήμερα δεν έχω ενεργή ώρα ( = 0 )
         $activeHour = $program->getActiveHour(Carbon::Now($timeZone)->format("Hi"));
         if ($date !== Carbon::Now($timeZone)->format("Ymd")) $activeHour = 0;
+        // αν είναι σήμερα
+        $isToday = $date == Carbon::Now($timeZone)->format("Ymd") ? true : false;
         // αν είναι ΣΚ 
         $isWeekend = intval(Carbon::createFromFormat("!Ymd", $date)->isWeekend());
         // επιτρέπεται η καταχώριση το ΣΚ
@@ -214,6 +216,7 @@ class ApousiologosService {
             'isWeekend' => $isWeekend,
             'allowWeekends' => $allowWeekends,
             'allowPastDays' => $pastDaysInsertApousies,
+            'isToday' => $isToday,
         ];
 
     }

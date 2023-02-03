@@ -22,19 +22,25 @@
         >
           Βαθμολογία
         </div>
-        <div v-show="$page.props.auth.user.permissions.admin && activeGradePeriod != 0" class="w-max self-center space-x-1 sm:space-x-2">
-          <span v-show="infoInsertedAnatheseis">Καταχωρίστηκαν {{infoInsertedAnatheseis}}&nbsp;</span>
+        <div v-show="activeGradePeriod != 0" class="w-max self-center space-x-1 sm:space-x-2">
+          <a
+            v-show="infoInsertedAnatheseis"
+            class="gth"
+            :href="route('insertedGrades',[1])"
+          >
+            Καταχωρίστηκαν {{infoInsertedAnatheseis}}
+          </a>
           <a
             v-show="infoNotInsertedAnatheseis"
             class="gth"
-            :href="route('noGrades')"
+            :href="route('insertedGrades',[0])"
           >
             Υπολείπονται {{infoNotInsertedAnatheseis}}
           </a>
           <a
             v-show="!infoNotInsertedAnatheseis"
             class="gth"
-            :href="route('noGradesStudents')"
+            :href="route('insertedGradesStudents')"
           >
             Μαθητές χωρίς βαθμούς
           </a>

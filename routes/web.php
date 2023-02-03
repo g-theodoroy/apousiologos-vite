@@ -162,14 +162,14 @@ Route::get('/setUpdated/{sha}', function ($sha) {
 })->middleware(['auth', 'verified', 'admin']);
 
 
-Route::get('/noGrades', function () {
-    return (new GradesService)->noGrades();
-})->middleware(['auth', 'verified', 'admin'])->name('noGrades');
+Route::get('/insertedGrades/{status?}', function ($status = null)  {
+    return (new GradesService)->insertedGrades($status);
+})->where('status', '[0-1]')->middleware(['auth', 'verified', 'teacher'])->name('insertedGrades');
 
 
-Route::get('/noGradesStudents', function () {
-    return (new GradesService)->noGradesStudents();
-})->middleware(['auth', 'verified', 'admin'])->name('noGradesStudents');
+Route::get('/insertedGradesStudents', function () {
+    return (new GradesService)->insertedGradesStudents();
+})->middleware(['auth', 'verified', 'teacher'])->name('insertedGradesStudents');
 
 
 require __DIR__ . '/auth.php';

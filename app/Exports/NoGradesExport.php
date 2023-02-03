@@ -14,6 +14,12 @@ use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class NoGradesExport implements FromCollection, WithHeadings, ShouldAutoSize, WithEvents
 {
+    private $status;
+
+    public function __construct($status)
+    {
+        $this->status = $status;
+    }
 
     public function registerEvents(): array
     {
@@ -29,8 +35,8 @@ class NoGradesExport implements FromCollection, WithHeadings, ShouldAutoSize, Wi
     public function headings(): array
     {
         return [
-            'ΤΜΗΜΑ',
             'ΚΑΘΗΓΗΤΗΣ',
+            'ΤΜΗΜΑ',
             'ΜΑΘΗΜΑ'
         ];
     }
@@ -40,13 +46,36 @@ class NoGradesExport implements FromCollection, WithHeadings, ShouldAutoSize, Wi
      */
     public function collection()
     {
+
         $activeGradePeriod = Setting::getValueOf('activeGradePeriod');
         $insertedAnatheseis = Grade::where('period_id', $activeGradePeriod)->distinct('anathesi_id')->pluck('anathesi_id');
-        $notInsertedAnatheseis = Anathesi::whereNotIn('id', $insertedAnatheseis)->with('user:id,name')->orderby('user_id')->orderby('tmima')->get(['user_id', 'tmima', 'mathima'])->toArray();
-        $notInserted = [];
-        foreach ($notInsertedAnatheseis as $not) {
-            $notInserted[] = [ $not['tmima'], $not['user']['name'],  $not['mathima']];
+        if( $this->status){
+            // αν έρχεται η μεταβλητή $this->status = 1 τότε βρίσκω τις καταχωρισμένες καταστάσεις
+            $anatheseis = Anathesi::whereIn('id', $insertedAnatheseis);
+        }else{
+            // αν δεν έρχεται η μεταβλητή $this->status = 0 τότε βρίσκω τις υπολοιπόμενες καταστάσεις
+            $anatheseis = Anathesi::whereNotIn('id', $insertedAnatheseis);
         }
-        return collect($notInserted);    
+        if(auth()->user()->permissions['teacher']){
+            $anatheseis = $anatheseis->where('user_id', auth()->user()->id);
+        }
+        $anatheseis = $anatheseis->with('user:id,name')->orderby('user_id')->orderby('tmima')->get(['user_id', 'tmima', 'mathima'])->toArray();
+        
+        $data = [];
+        foreach ($anatheseis as $not) {
+            $data[] = [  $not['user']['name'], $not['tmima'],  $not['mathima']];
+        }
+        
+        array_multisort(
+            array_column($data, 0),
+            SORT_ASC,
+            array_column($data, 1),
+            SORT_ASC,
+            array_column($data, 2),
+            SORT_ASC,
+            $data
+        );
+        
+        return collect($data);    
     }
 }

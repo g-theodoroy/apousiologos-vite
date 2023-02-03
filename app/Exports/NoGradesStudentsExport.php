@@ -48,7 +48,11 @@ class NoGradesStudentsExport implements FromCollection, WithHeadings, ShouldAuto
         $data = [];
         foreach ($students as $stu) {
             foreach ($stu->tmimata as $tmima) {
-                $anatheseis = Anathesi::whereTmima($tmima['tmima'])->with('user:id,name')->orderby('mathima')->get();
+                $anatheseis = Anathesi::whereTmima($tmima['tmima']);
+                if(auth()->user()->permissions['teacher']){
+                    $anatheseis = $anatheseis->where('user_id', auth()->user()->id);
+                }
+                $anatheseis = $anatheseis->with('user:id,name')->orderby('mathima')->get();
                 foreach ($anatheseis as $anathesi) {
                     $gradeExists = Grade::where('anathesi_id', $anathesi->id)->where('student_id', $stu['id'])->where('period_id', $activeGradePeriod)->count();
                     if (!$gradeExists) {
@@ -57,6 +61,17 @@ class NoGradesStudentsExport implements FromCollection, WithHeadings, ShouldAuto
                 }
             }
         }
+        array_multisort(
+            array_column($data, 3),
+            SORT_ASC,
+            array_column($data, 4),
+            SORT_ASC,
+            array_column($data, 1),
+            SORT_ASC,
+            array_column($data, 2),
+            SORT_ASC,
+            $data
+        );
         return collect($data);
     }
 }
