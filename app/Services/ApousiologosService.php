@@ -97,6 +97,7 @@ class ApousiologosService {
             $tmimata = $stuApFoD->tmimata->sortBy(function ($string) {
                 return strlen($string);
             })->pluck('tmima');
+            if(! count($tmimata)) continue;
             // γέμισμα πίνακα $arrStudents
             $arrStudents[] = [
                 'id' => $stuApFoD->id,

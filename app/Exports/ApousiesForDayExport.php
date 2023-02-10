@@ -40,7 +40,6 @@ class ApousiesForDayExport implements FromView, ShouldAutoSize, WithEvents
         $apoDate = $this->apoDate;
         $eosDate = $this->eosDate;
         $nowDate = Carbon::now()->format("Ymd");
-        $arrStudents = array();
 
         if ($apoDate !== '' && $eosDate !== '') {
             // βρίσκω τους μαθητές που έχουν απουσίες την συγκεκριμμένη ημέρα
@@ -48,68 +47,32 @@ class ApousiesForDayExport implements FromView, ShouldAutoSize, WithEvents
                 $query->where('date', '>=', $apoDate)->where('date', '<=', $eosDate);
             })->orderby('eponimo')->orderby('onoma')->orderby('patronimo')->with('tmimata')->with('apousies')->get();
 
-            foreach ($students as $stuApFoD) {
-                $arrStudents[] = [
-                    'id' => $stuApFoD->id,
-                    'eponimo' => $stuApFoD->eponimo,
-                    'onoma' => $stuApFoD->onoma,
-                    'patronimo' => $stuApFoD->patronimo,
-                    'tmima' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->first('tmima')->tmima,
-                    'tmimata' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->implode(', '),
-                    'apousies' => $stuApFoD->apousies[0]->where('student_id', $stuApFoD->id)->where('date', '>=', $apoDate)->where('date', '<=', $eosDate)->orderby('date')->pluck('apousies', 'date')->toArray(),
-                ];
-            }
+            $arrStudents = $this->arrStudents($students);
+
         } elseif ($apoDate !== '' && $eosDate == '') {
             // βρίσκω τους μαθητές που έχουν απουσίες την συγκεκριμμένη ημέρα
             $students = Student::whereHas('apousies', function ($query) use ($apoDate) {
                 $query->where('date', '>=', $apoDate);
             })->orderby('eponimo')->orderby('onoma')->orderby('patronimo')->with('tmimata')->with('apousies')->get();
 
-            foreach ($students as $stuApFoD) {
-                $arrStudents[] = [
-                    'id' => $stuApFoD->id,
-                    'eponimo' => $stuApFoD->eponimo,
-                    'onoma' => $stuApFoD->onoma,
-                    'patronimo' => $stuApFoD->patronimo,
-                    'tmima' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->first('tmima')->tmima,
-                    'tmimata' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->implode(', '),
-                    'apousies' => $stuApFoD->apousies[0]->where('student_id', $stuApFoD->id)->where('date', '>=', $apoDate)->orderby('date')->pluck('apousies', 'date')->toArray(),
-                ];
-            }
+            $arrStudents = $this->arrStudents($students);
+
         } elseif ($apoDate == '' && $eosDate !== '') {
             // βρίσκω τους μαθητές που έχουν απουσίες την συγκεκριμμένη ημέρα
             $students = Student::whereHas('apousies', function ($query) use ($eosDate) {
                 $query->where('date', '<=', $eosDate);
             })->orderby('eponimo')->orderby('onoma')->orderby('patronimo')->with('tmimata')->with('apousies')->get();
 
-            foreach ($students as $stuApFoD) {
-                $arrStudents[] = [
-                    'id' => $stuApFoD->id,
-                    'eponimo' => $stuApFoD->eponimo,
-                    'onoma' => $stuApFoD->onoma,
-                    'patronimo' => $stuApFoD->patronimo,
-                    'tmima' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->first('tmima')->tmima,
-                    'tmimata' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->implode(', '),
-                    'apousies' => $stuApFoD->apousies[0]->where('student_id', $stuApFoD->id)->where('date', '<=', $eosDate)->orderby('date')->pluck('apousies', 'date')->toArray(),
-                ];
-            }
+            $arrStudents = $this->arrStudents($students);
+
         } else {
             // βρίσκω τους μαθητές που έχουν απουσίες την συγκεκριμμένη ημέρα
             $students = Student::whereHas('apousies', function ($query) use ($nowDate) {
                 $query->where('date', '=', $nowDate);
             })->orderby('eponimo')->orderby('onoma')->orderby('patronimo')->with('tmimata')->with('apousies')->get();
 
-            foreach ($students as $stuApFoD) {
-                $arrStudents[] = [
-                    'id' => $stuApFoD->id,
-                    'eponimo' => $stuApFoD->eponimo,
-                    'onoma' => $stuApFoD->onoma,
-                    'patronimo' => $stuApFoD->patronimo,
-                    'tmima' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->first('tmima')->tmima,
-                    'tmimata' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->implode(', '),
-                    'apousies' => $stuApFoD->apousies[0]->where('student_id', $stuApFoD->id)->where('date', $nowDate)->pluck('apousies', 'date')->toArray(),
-                ];
-            }
+            $arrStudents = $this->arrStudents($students);
+
         }
 
         $newStudents = array();
@@ -138,5 +101,22 @@ class ApousiesForDayExport implements FromView, ShouldAutoSize, WithEvents
         return view('apouxls', [
             'arrStudents' => $newStudents
         ]);
+    }
+
+    private function arrStudents($students){
+        $arrStudents = array();
+        foreach ($students as $stuApFoD) {
+            if(! count($stuApFoD->tmimata)) continue;
+            $arrStudents[] = [
+                'id' => $stuApFoD->id,
+                'eponimo' => $stuApFoD->eponimo,
+                'onoma' => $stuApFoD->onoma,
+                'patronimo' => $stuApFoD->patronimo,
+                'tmima' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->first('tmima')->tmima,
+                'tmimata' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->implode(', '),
+                'apousies' => $stuApFoD->apousies[0]->where('student_id', $stuApFoD->id)->where('date', '>=', $apoDate)->where('date', '<=', $eosDate)->orderby('date')->pluck('apousies', 'date')->toArray(),
+            ];
+        }
+        return $arrStudents;
     }
 }
