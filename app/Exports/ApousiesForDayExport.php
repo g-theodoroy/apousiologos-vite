@@ -105,8 +105,16 @@ class ApousiesForDayExport implements FromView, ShouldAutoSize, WithEvents
 
     private function arrStudents($students){
         $arrStudents = array();
+        $nowDate = Carbon::now()->format("Ymd");
         foreach ($students as $stuApFoD) {
+            // αν ο μαθητής δεν είναι σε κανένα τμήμα προσπερνάω
             if(! count($stuApFoD->tmimata)) continue;
+            // φτιάχνω τις απουσίες για κάθε μαθητή ανάλογα με τις ρυθμίσεις
+            $apousies = $stuApFoD->apousies[0]->where('student_id', $stuApFoD->id);
+            if ($this->apoDate) $apousies = $apousies->where('date', '>=', $this->apoDate);
+            if ($this->eosDate) $apousies = $apousies->where('date', '<=', $this->eosDate);
+            if(!$this->apoDate && !$this->eosDate) $apousies = $apousies->where('date', '=', $nowDate);
+            $apousies = $apousies->orderby('date')->pluck('apousies', 'date')->toArray();
             $arrStudents[] = [
                 'id' => $stuApFoD->id,
                 'eponimo' => $stuApFoD->eponimo,
@@ -114,7 +122,7 @@ class ApousiesForDayExport implements FromView, ShouldAutoSize, WithEvents
                 'patronimo' => $stuApFoD->patronimo,
                 'tmima' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->first('tmima')->tmima,
                 'tmimata' => $stuApFoD->tmimata[0]->where('student_id', $stuApFoD->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->implode(', '),
-                'apousies' => $stuApFoD->apousies[0]->where('student_id', $stuApFoD->id)->where('date', '>=', $apoDate)->where('date', '<=', $eosDate)->orderby('date')->pluck('apousies', 'date')->toArray(),
+                'apousies' => $apousies,
             ];
         }
         return $arrStudents;
