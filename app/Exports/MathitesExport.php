@@ -62,7 +62,7 @@ class MathitesExport implements FromCollection, WithHeadings, ShouldAutoSize, Wi
         'onoma' => $stu->onoma,
         'patronimo' => $stu->patronimo,
         'email' => $stu->email,
-        'tmimata' => $stu->tmimata[0] ? $stu->tmimata[0]->where('student_id', $stu->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->toArray() : []
+        'tmimata' => count($stu->tmimata) ? $stu->tmimata[0]->where('student_id', $stu->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->toArray() : []
       ];
     }
 

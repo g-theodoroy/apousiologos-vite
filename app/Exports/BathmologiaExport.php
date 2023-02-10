@@ -63,7 +63,7 @@ class BathmologiaExport implements FromCollection, WithCustomStartCell, WithEven
                 }
             }
             // βρίσκω την τάξη παίρνοντας το πρώτο γράμμα του μικρότερου σε μήκος τμήματος ( Α1, Β1, Γ1)
-            $arrStudents[$num]['taxi'] = mb_substr($student->tmimata[0]->where('student_id', $student->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->first('tmima')->tmima, 0, 1);
+            $arrStudents[$num]['taxi'] = count($student->tmimata) ? mb_substr($student->tmimata[0]->where('student_id', $student->id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->first('tmima')->tmima, 0, 1) : null;
             $arrStudents[$num]['am'] = $student->id;
             $arrStudents[$num]['eponimo'] = $student->eponimo;
             $arrStudents[$num]['onoma'] = $student->onoma;
