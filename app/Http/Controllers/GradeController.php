@@ -27,7 +27,7 @@ class GradeController extends Controller
         $data = request()->all();
 
         foreach ($data as $am => $periods) {
-            $grade = $periods[$activeGradePeriod];
+            $grade = $periods[$activeGradePeriod] ?? null;
             if ($grade != null ){
                 Grade::updateOrCreate([
                     'anathesi_id' => $selectedAnathesiId, 
