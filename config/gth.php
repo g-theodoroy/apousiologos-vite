@@ -52,6 +52,7 @@ return [
             'allowRegister',
             'hoursUnlocked',
             'letTeachersUnlockHours',
+            'allowTeachersEditOthersApousies',
             'allowTeachersSaveAtNotActiveHour',
             'showFutureHours',
             'allowWeekends',

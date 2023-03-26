@@ -92,4 +92,11 @@ class User extends Authenticatable
             'teacherOrAdmin' => $this->role_id < 3,
         ];
     }
+
+    
+    public static function getNames()
+    {
+        return User::pluck( 'name','id');
+    }
+
 }

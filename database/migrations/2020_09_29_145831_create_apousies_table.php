@@ -18,6 +18,7 @@ class CreateApousiesTable extends Migration
             $table->integer('student_id')->unsigned();
             $table->integer('date')->unsigned();
             $table->string('apousies');
+            $table->string('teachers');
             $table->timestamps();
         });
     }

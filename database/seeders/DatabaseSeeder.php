@@ -53,6 +53,13 @@ class DatabaseSeeder extends Seeder
         ]);
 
         DB::table('settings')->insert([
+            'key' => 'allowTeachersEditOthersApousies',
+            'value' => null,
+            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
+            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
+        ]);
+
+        DB::table('settings')->insert([
             'key' => 'showFutureHours',
             'value' => null,
             'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
@@ -101,21 +108,6 @@ class DatabaseSeeder extends Seeder
             'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
         ]);
 
-        /*
-        DB::table('settings')->insert([
-            'key' => 'totalStartMonthDay',
-            'value' => '09-01',
-            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        ]);
-
-        DB::table('settings')->insert([
-            'key' => 'totalEndMonthDay',
-            'value' => '06-30',
-            'created_at' => Carbon::now()->format('Y-m-d H:i:s'),
-            'updated_at' => Carbon::now()->format('Y-m-d H:i:s'),
-        ]);
-*/
         DB::table('settings')->insert([
             'key' => 'activeGradePeriod',
             'value' => 0,

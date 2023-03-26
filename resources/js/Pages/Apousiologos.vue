@@ -252,11 +252,8 @@
                     <BreezeCheckbox
                       v-model="apouForm[student.id][index]"
                       :checked="apouForm[student.id][index]"
-                      :disabled="
-                        activeHour !== index &&
-                        !$page.props.auth.user.permissions.admin &&
-                        !varHoursUnlocked
-                      "
+                      :disabled="checkDisabled(student.id, index)"
+                      :title="arrNames[arrTeachers[student.id][index]] !== undefined ? arrNames[arrTeachers[student.id][index]]: 'teacher_id ' + arrTeachers[student.id][index]"
                     />
                   </div>
                   <div
@@ -362,12 +359,15 @@ export default {
     totalHours: Number,
     hoursUnlocked: Number,
     letTeachersUnlockHours: Number,
+    allowTeachersEditOthersApousies: Number,
     showFutureHours: Number,
     isWeekend: Number,
     allowWeekends: Number,
     allowTeachersSaveAtNotActiveHour: Number,
     allowTeachersEmail: Number,
     arrApousies: Object,
+    arrTeachers: Object,
+    arrNames: Object,
     allowPastDays: Boolean,
     isToday: Boolean,
   },
@@ -504,6 +504,16 @@ export default {
       ) {
         return;
       }
+
+      let chkNotSameTeacher = false
+      props.arrStudents.forEach((student) => {
+        if(props.arrTeachers[student.id][index] !== '' && !(props.arrTeachers[student.id][index] == usePage().props.value.auth.user.id)) {
+          chkNotSameTeacher =  true
+        }
+      });
+      if (usePage().props.value.auth.user.permissions.admin) chkNotSameTeacher = false
+      if(chkNotSameTeacher) return
+
       let newValue;
       props.arrStudents.forEach((student, loopIndex) => {
         if (loopIndex == 0) {
@@ -553,6 +563,14 @@ export default {
       return false
     }
 
+    function checkDisabled(studentId,index){
+      if(usePage().props.value.auth.user.permissions.admin) return false
+      if(props.activeHour == index) return false
+      if(varHoursUnlocked.value && props.allowTeachersEditOthersApousies) return false
+      if(varHoursUnlocked.value && (!props.arrTeachers[studentId][index] || usePage().props.value.auth.user.id == props.arrTeachers[studentId][index])) return false
+      return true
+    }
+
     return {
       varHoursUnlocked,
       apouForm,
@@ -573,7 +591,8 @@ export default {
       varSendEmail,
       createQuery,
       checkEmailChks,
-      disableDatePicker
+      disableDatePicker,
+      checkDisabled
     };
   },
 };

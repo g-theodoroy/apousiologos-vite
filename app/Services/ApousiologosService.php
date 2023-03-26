@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Carbon\Carbon;
+use App\Models\User;
 use App\Models\Tmima;
 use App\Models\Apousie;
 use App\Models\Program;
@@ -29,9 +30,11 @@ class ApousiologosService {
 
         // αρχικοποίηση πίνακα απουσιών
         $initApouArray = array();
+        $initTeachArray = array();
         $numOfHours = Program::getNumOfHours();
         for ($i = 1; $i <= $numOfHours; $i++) {
             $initApouArray[$i] = false;
+            $initTeachArray[$i] = '';
         }
 
         // αρχικοποιώ την ημέρα αν δεν έχει έρθει με το url
@@ -68,6 +71,8 @@ class ApousiologosService {
 
         // βάζω σε πίνακα [ΑΜ]=απουσίες για την ημέρα
         $apousiesForDate = Apousie::where('date', $date)->pluck('apousies', 'student_id')->toArray();
+        // βάζω σε πίνακα [ΑΜ]=καθηγητές για την ημέρα
+        $teachersForDate = Apousie::where('date', $date)->pluck('teachers', 'student_id')->toArray();
 
 
         if ($selectedTmima) {
@@ -92,6 +97,7 @@ class ApousiologosService {
         $arrSendEmail = array();
         $arrApousies = array();
         $arrApousies['date'] = Carbon::createFromFormat("!Ymd", $date)->format("Y-m-d");
+        $arrTeachers = array();
         foreach ($students as $stuApFoD) {
             // ταξινόμιση τμημάτων με το μήκος τους
             $tmimata = $stuApFoD->tmimata->sortBy(function ($string) {
@@ -128,6 +134,20 @@ class ApousiologosService {
                 // αν δεν έχει απουσίες βάζω τον αρχικοποιημένο πριν πίνακα
                 $arrApousies[$stuApFoD->id] = $initApouArray;
             }
+            // αν έχει απουσίες την ημέρα τις βάζω σε πίνακα [ώρα] =>  id ΚΑΘΗΓΗΤΗ
+            if ($teachersForDate[$stuApFoD->id] ?? false) {
+                $arrTeach = array();
+                $num = 1;
+                foreach (explode('-', $teachersForDate[$stuApFoD->id]) as $value) {
+                    $value == '0' ? $arrTeach[$num] = '' : $arrTeach[$num] = $value;
+                    $num++;
+                }
+                $arrTeachers[$stuApFoD->id] = $arrTeach;
+            } else {
+                // αν δεν έχει απουσίες βάζω τον αρχικοποιημένο πριν πίνακα
+                $arrTeachers[$stuApFoD->id] = $initTeachArray;
+            }
+
         }
         // ταξινόμηση πίνακα
         if ($selectedTmima) {
@@ -164,6 +184,8 @@ class ApousiologosService {
         if (Auth::user()->permissions['admin']) $hoursUnlocked = 1;
         // επιτρέπεται στους καθηγητές να ξεκλειδώσουν τις ώρες;
         $letTeachersUnlockHours = intval($settings['letTeachersUnlockHours']);
+        // επιτρέπεται στους καθηγητές να ξεκλειδώσουν τις ώρες;
+        $allowTeachersEditOthersApousies = intval($settings['allowTeachersEditOthersApousies']);
         // να φαίνονται ή όχι οι επόμενες ώρες
         $showFutureHours = intval($settings['showFutureHours']);
         // παίρνω την ημέρα και αλλάζω το format της ημνιας από εεεεμμηη σε εεεε-μμ-ηη
@@ -181,12 +203,14 @@ class ApousiologosService {
         // Οι μαθητές δεν μπορούν  ακόμη και αν επιτρέπεται στους καθηγητές
         // να έχουν ξεκλείδωτες τις ώρες
         // να ξεκλειδώσουν τις ώρες
+        // να επεξεργαστούν απουσίες άλλων
         // να εισάγουν απουσίες ΣαββατοΚύριακο
         // να επιλέξουν άλλη ημέρα
         // να αποθηκεύουν εκτός ωραρίου
         if (Auth::user()->permissions['student']) {
             $hoursUnlocked = 0;
             $letTeachersUnlockHours = 0;
+            $allowTeachersEditOthersApousies = 0;
             $allowWeekends = 0;
             $pastDaysInsertApousies = false;
             $allowTeachersSaveAtNotActiveHour = 0;
@@ -207,10 +231,13 @@ class ApousiologosService {
             'activeHour' => $activeHour,
             'hoursUnlocked' => $hoursUnlocked,
             'letTeachersUnlockHours' => $letTeachersUnlockHours,
+            'allowTeachersEditOthersApousies' => $allowTeachersEditOthersApousies,
             'showFutureHours' => $showFutureHours,
             'arrStudents' => $arrStudents,
             'arrSendEmail' => $arrSendEmail,
             'arrApousies' => $arrApousies,
+            'arrTeachers' => $arrTeachers,
+            'arrNames' => User::getNames(),
             'setCustomDate' => $setCustomDate,
             'allowTeachersSaveAtNotActiveHour' => $allowTeachersSaveAtNotActiveHour,
             'allowTeachersEmail' => $allowTeachersEmail,

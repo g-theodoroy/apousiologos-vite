@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Inertia\Inertia;
 use App\Models\Apousie;
 use App\Models\Program;
+use App\Models\Setting;
 use App\Http\Controllers\Controller;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\ApousiesForDayExport;
@@ -28,12 +29,14 @@ class ApousiologosController extends Controller
     $data = request()->except(['date']);
     $postDate = request('date');
     $date = str_replace("-", "", $postDate);
+    $numOfHours = Program::getNumOfHours();
+    $allowTeachersEditOthersApousies = Setting::getValueOf('allowTeachersEditOthersApousies');
 
     // αρχικοποιώ την ημέρα αν δεν έχει έρθει με το url
     if (!$date) $date = Carbon::now()->format("Ymd");
 
     // αρχικοποίηση string απουσιών "0000000"
-    $initApouValue = str_repeat("0", Program::getNumOfHours());
+    $initApouValue = str_repeat("0", $numOfHours);
 
     // φτιάχνω την τιμή για αποθήκευση '1100100'
     foreach ($data as $key => $arrValue) {
@@ -48,9 +51,52 @@ class ApousiologosController extends Controller
 
       // αν δεν είναι κενό ενημερώνω αν υπάρχει ΑΜ+ημνια ή πρόσθέτω
       if ($value) {
-        Apousie::updateOrCreate(['student_id' => $key, 'date' => $date], [
-          'apousies' => $value,
-        ]);
+        $apousia = Apousie::where('student_id', $key)->where('date', $date)->first();
+        if (!$apousia) {
+          $teachValue = '';
+          // φτιάχνω την τιμή για αποθήκευση '1100100'
+          foreach ($arrValue as $num => $val) {
+            $val == true ? $teachValue .= auth()->user()->id . '-' :  $teachValue .= '0-';
+          }
+          $teachValue = rtrim($teachValue, '-');
+          Apousie::create([
+            'student_id' => $key,
+            'date' => $date,
+            'apousies' => $value,
+            'teachers' => $teachValue
+          ]);
+        } else {
+          // παίρνω τις παλιες απουσίες
+          $oldValue = $apousia->apousies;
+          // παίρνω τους παλιους καθηγητές
+          $teachValue = explode('-', $apousia->teachers);
+
+          for ($i = 0; $i < $numOfHours; $i++) {
+            // αν δεν έχει αλλαγή προσπερνάω
+            if ($oldValue[$i] == $value[$i]) continue;
+            // αν ΕΧΕΙ αλλαγή προσπερνάω
+            // η νέα τιμή 1 = απουσία
+            if ($value[$i] == 1) {
+              $teachValue[$i] = auth()->user()->id;
+            } else {
+              // σβήνω αν είναι admin ή allowTeachersEditOthersApousies
+              if (auth()->user()->permissions['admin'] || $allowTeachersEditOthersApousies) {
+                $teachValue[$i] = 0;
+              } else {
+                // σβηνω αν είναι ίδιος ο χρήστης
+                if (auth()->user()->id == $teachValue[$i]) {
+                  $teachValue[$i] = 0;
+                } else {
+                  // αν ΔΕΝ είναι ίδιος ο χρήστης επαναφέρω τιμή
+                  $value[$i] = $oldValue[$i];
+                }
+              }
+            }
+          }
+          $apousia->apousies = $value;
+          $apousia->teachers = implode('-', $teachValue);
+          $apousia->save();
+        }
       } else {
         // αν είναι κενό διαγράφω αν υπάρχει ΑΜ+ημνια
         Apousie::where('student_id', $key)->where('date', $date)->delete();
@@ -87,8 +133,5 @@ class ApousiologosController extends Controller
 
     return Excel::download(new ApousiesForDayExport($apoDate, $eosDate), 'myschool_Eisagwgh_Apousiwn_Mazika_apo_Excel_by_GΘ' . $filenameDates . '.xls');
   }
-
-
-
 
 }

@@ -97,6 +97,14 @@
                   />
                 </SettingsCheckboxContainer>
                 <SettingsCheckboxContainer
+                  label="Επιτρέπεται στους καθηγητές να επεξεργάζονται απουσίες άλλων"
+                >
+                  <BreezeCheckbox
+                    v-model="settings.allowTeachersEditOthersApousies"
+                    :checked="initialSettings.allowTeachersEditOthersApousies"
+                  />
+                </SettingsCheckboxContainer>
+                <SettingsCheckboxContainer
                   label="Να μη κρύβονται οι επόμενες ώρες"
                 >
                   <BreezeCheckbox
