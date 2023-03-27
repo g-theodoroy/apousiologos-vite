@@ -253,7 +253,11 @@
                       v-model="apouForm[student.id][index]"
                       :checked="apouForm[student.id][index]"
                       :disabled="checkDisabled(student.id, index)"
-                      :title="arrNames[arrTeachers[student.id][index]] !== undefined ? arrNames[arrTeachers[student.id][index]]: 'teacher_id ' + arrTeachers[student.id][index]"
+                      :title="arrNames[arrTeachers[student.id][index]] !== undefined 
+                      ? arrNames[arrTeachers[student.id][index]]
+                      : arrTeachers[student.id][index] ?? 
+                      'teacher_id ' + arrTeachers[student.id][index]
+                      "
                     />
                   </div>
                   <div
