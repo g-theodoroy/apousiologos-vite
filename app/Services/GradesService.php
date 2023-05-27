@@ -148,7 +148,7 @@ class GradesService {
     
     public function insertedGrades($status){
 
-        return Excel::download(new NoGradesExport($status), 'Υπολοιπόμενοι βαθμοί.xls');
+        return Excel::download(new NoGradesExport($status), 'Καταχωρισμένοι βαθμοί.xls');
     }
 
 
