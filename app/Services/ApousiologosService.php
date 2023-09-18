@@ -31,10 +31,12 @@ class ApousiologosService {
         // αρχικοποίηση πίνακα απουσιών
         $initApouArray = array();
         $initTeachArray = array();
+        $initApovolesArray = array();
         $numOfHours = Program::getNumOfHours();
         for ($i = 1; $i <= $numOfHours; $i++) {
             $initApouArray[$i] = false;
             $initTeachArray[$i] = '';
+            $initApovolesArray[$i] = false;
         }
 
         // αρχικοποιώ την ημέρα αν δεν έχει έρθει με το url
@@ -71,6 +73,8 @@ class ApousiologosService {
 
         // βάζω σε πίνακα [ΑΜ]=απουσίες για την ημέρα
         $apousiesForDate = Apousie::where('date', $date)->pluck('apousies', 'student_id')->toArray();
+        // βάζω σε πίνακα [ΑΜ]=αποβολές για την ημέρα
+        $apovolesForDate = Apousie::where('date', $date)->pluck('apovoles', 'student_id')->toArray();
         // βάζω σε πίνακα [ΑΜ]=καθηγητές για την ημέρα
         $teachersForDate = Apousie::where('date', $date)->pluck('teachers', 'student_id')->toArray();
 
@@ -129,10 +133,24 @@ class ApousiologosService {
                     $value == '1' ? $arrApou[$num] = true : $arrApou[$num] = false;
                     $num++;
                 }
-                $arrApousies[$stuApFoD->id] = $arrApou;
+                $arrApousies[$stuApFoD->id]["apou"] = $arrApou;
+                // Αποβολές
+                if ($apovolesForDate[$stuApFoD->id] ?? false) {
+                    $arrApov = array();
+                    $num = 1;
+                    foreach (str_split($apovolesForDate[$stuApFoD->id]) as $value) {
+                        $value == '1' ? $arrApov[$num] = true : $arrApov[$num] = false;
+                        $num++;
+                    }
+                    $arrApousies[$stuApFoD->id]["apov"] = $arrApov;
+
+                }else{
+                    $arrApousies[$stuApFoD->id]["apov"] = $initApovolesArray;
+                }
             } else {
                 // αν δεν έχει απουσίες βάζω τον αρχικοποιημένο πριν πίνακα
-                $arrApousies[$stuApFoD->id] = $initApouArray;
+                $arrApousies[$stuApFoD->id]["apou"] = $initApouArray;
+                $arrApousies[$stuApFoD->id]["apov"] = $initApovolesArray;
             }
             // αν έχει απουσίες την ημέρα τις βάζω σε πίνακα [ώρα] =>  id ΚΑΘΗΓΗΤΗ
             if ($teachersForDate[$stuApFoD->id] ?? false) {
@@ -284,6 +302,16 @@ class ApousiologosService {
                 $num++;
             }
             $hoursStr = trim($hoursStr, ", ");
+
+            $apovolesForDate = $student->apousies->where('date', $date)->pluck('apovoles', 'date');
+            $num = 1;
+            $apovolesStr = '';
+            foreach (str_split($apovolesForDate[$date]) as $value) {
+                $value == '1' ?  $apovolesStr .= $num . "η " : $apovolesStr .= "__  ";
+                $num++;
+            }
+            $apovolesStr = trim($apovolesStr, ", ");
+
             if (!$student->email) continue;
             $emailData[] = [
                 'email' => $student->email,
@@ -295,7 +323,8 @@ class ApousiologosService {
                     return strlen($string);
                 })->pluck('tmima')[0],
                 'sum' => $sumapp,
-                'hours' => $hoursStr
+                'hours' => $hoursStr,
+                'apovoles' => $apovolesStr
             ];
         }
         $message = "Επιτυχής αποστολή email σε ";

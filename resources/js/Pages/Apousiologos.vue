@@ -227,7 +227,7 @@
                   "
                 >
                   <div
-                    @click="checkRow(student.id)"
+                    @click.self="checkRow(student.id)"
                     class="w-8 text-center pb-0.5 bg-gray-200 font-semibold"
                     :class="{
                       'cursor-pointer': $page.props.auth.user.permissions.admin,
@@ -238,7 +238,14 @@
                         : ''
                     "
                   >
-                    {{ student.apousies }}
+                    {{ student.apousies || "&nbsp;" }}
+                    <!-- κουμπί αποβολής -->
+                    <div 
+                      class="h-2 bg-gray-300 ml-1 mr-1 cursor-pointer rounded" 
+                      title="Αποβολή" 
+                      @click="checkApovoli(student.id)"
+                    />
+
                   </div>
                   <div
                     v-for="index in totalHours"
@@ -247,18 +254,30 @@
                     class="w-8 text-center pb-0.5 bg-gray-100"
                     :class="{
                       'bg-gray-500': index === activeHour,
+                      'bg-red-300': apouForm[student.id]['apov'][index],
                     }"
                   >
                     <BreezeCheckbox
-                      v-model="apouForm[student.id][index]"
-                      :checked="apouForm[student.id][index]"
+                      v-model="apouForm[student.id]['apou'][index]"
+                      :checked="apouForm[student.id]['apou'][index]"
                       :disabled="checkDisabled(student.id, index)"
                       :title="arrNames[arrTeachers[student.id][index]] !== undefined 
                       ? arrNames[arrTeachers[student.id][index]]
                       : arrTeachers[student.id][index] ?? 
                       'teacher_id ' + arrTeachers[student.id][index]
                       "
+                      @click="toggleApousia(student.id, index)"
                     />
+                    <!-- κουμπί αποβολής -->
+                    <div 
+                      class="h-2 bg-gray-300 ml-1 mr-1 cursor-pointer rounded" 
+                      :class="{
+                        'bg-red-400': apouForm[student.id]['apov'][index],
+                      }"
+                      title="Αποβολή" 
+                      @click="toggleApovoli(student.id, index)"
+                    >
+                    </div>
                   </div>
                   <div
                     v-show="$page.props.auth.user.permissions.teacherOrAdmin"
@@ -521,9 +540,9 @@ export default {
       let newValue;
       props.arrStudents.forEach((student, loopIndex) => {
         if (loopIndex == 0) {
-          newValue = !apouForm[student.id][index];
+          newValue = !apouForm[student.id]['apou'][index];
         }
-        apouForm[student.id][index] = newValue;
+        apouForm[student.id]['apou'][index] = newValue;
       });
     }
 
@@ -531,14 +550,29 @@ export default {
       // μόνο ο Διαχειριστής
       if (!usePage().props.value.auth.user.permissions.admin) return;
       let newValue;
-      for (let loopIndex in apouForm[id]) {
+      for (let loopIndex in apouForm[id]['apou']) {
         if (loopIndex == 1) {
-          newValue = !apouForm[id][loopIndex];
+          newValue = !apouForm[id]['apou'][loopIndex];
         }
-        apouForm[id][loopIndex] = newValue;
+        apouForm[id]['apou'][loopIndex] = newValue;
+        if(newValue == false) apouForm[id]['apov'][loopIndex] = newValue;
       }
     }
-    let newValue = false;
+  
+    function checkApovoli(id) {
+      // μόνο ο Διαχειριστής
+      if (!usePage().props.value.auth.user.permissions.admin) return;
+      let newValue;
+
+      for (let loopIndex in apouForm[id]['apov']) {
+        if (loopIndex == 1) {
+          newValue = !apouForm[id]['apov'][loopIndex];
+        }
+        apouForm[id]['apov'][loopIndex] = newValue;
+        if(newValue == true) apouForm[id]['apou'][loopIndex] = newValue;
+      }
+    }
+  
 
     function printTime() {
       return new Date().toLocaleTimeString();
@@ -575,6 +609,21 @@ export default {
       return true
     }
 
+    function toggleApovoli( studentId, index){
+      if(apouForm[studentId]['apov'][index]==false) {
+        apouForm[studentId]['apou'][index]=true
+        apouForm[studentId]['apov'][index]=true
+      }else{
+        apouForm[studentId]['apov'][index]=false
+      }
+    }
+
+    function toggleApousia( studentId, index){
+      if(apouForm[studentId]['apou'][index]==true) {
+        apouForm[studentId]['apov'][index]=false
+      }
+    }
+
     return {
       varHoursUnlocked,
       apouForm,
@@ -596,7 +645,10 @@ export default {
       createQuery,
       checkEmailChks,
       disableDatePicker,
-      checkDisabled
+      checkDisabled,
+      toggleApovoli,
+      toggleApousia,
+      checkApovoli,
     };
   },
 };

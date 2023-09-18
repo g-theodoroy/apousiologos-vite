@@ -380,7 +380,7 @@
                                 }}
                               </td>
                               <td
-                                v-for="(day, index) in apousies.arrApou"
+                                v-for="(day, index) in apousies.arrApou['apou']"
                                 :key="index"
                                 class="
                                   border-gray-500 border border-l-2 border-r-2
@@ -390,6 +390,9 @@
                                   hidden
                                   sm:table-cell
                                 "
+                                :class="{
+                                  'bg-red-100':apousies.arrApou.apov[index]
+                                }"
                               >
                                 {{ day ? "+" : "&nbsp;" }}
                               </td>
@@ -430,7 +433,7 @@
                                     <td class="w-16 text-right">ώρες:</td>
 
                                     <td
-                                      v-for="(chk, index) in apousies.arrApou"
+                                      v-for="(chk, index) in apousies.arrApou.apou"
                                       :key="index"
                                       class="w-4"
                                       :class="{
@@ -664,19 +667,37 @@
               }"
             />
           </div>
-          <div class="flex bg-gray-100 space-x-2 px-2 pb-1 rounded-lg">
+          <div class="flex bg-gray-100 space-x-1 pb-1 mx-2 rounded-lg">
             <div
               v-for="index in totalHours"
               :key="index"
               class="text-gray-400 sm:px-1"
             >
-              <div class="flex flex-col">
+              <div class="flex flex-col"
+               :class="{
+                  'bg-red-200':apouForm.apov[index]
+                }"
+
+              >
                 <span>{{ index }}η</span>
                 <BreezeCheckbox
                   class="ml-0.5"
-                  v-model="apouForm[index]"
-                  :checked="apouForm[index]"
+                  v-model="apouForm.apou[index]"
+                  :checked="apouForm.apou[index]"
+                  @click="toggleApousia(index)"
+ 
                 />
+
+                    <!-- κουμπί αποβολής -->
+                    <div 
+                      class="h-2 bg-gray-300 mt-1 cursor-pointer rounded" 
+                      :class="{
+                          'bg-red-400':apouForm.apov[index]
+                        }"
+                      title="Αποβολή" 
+                      @click="toggleApovoli(index)"
+                    />
+
               </div>
             </div>
           </div>
@@ -836,8 +857,9 @@ export default {
       if (apousies) {
         this.apouEditMode = true;
         this.apouForm.date = apousies.date;
-        for (var key in apousies.arrApou) {
-          this.apouForm[key] = apousies.arrApou[key];
+        for (var key in apousies.arrApou.apou) {
+          this.apouForm['apou'][key] = apousies.arrApou.apou[key];
+          this.apouForm['apov'][key] = apousies.arrApou.apov[key];
         }
       } else {
         this.apouEditMode = false;
@@ -921,9 +943,9 @@ export default {
         return;
       }
       let apouExist = false;
-      for (var key in this.apouForm) {
+      for (var key in this.apouForm['apou']){
         if (!isNaN(key)) {
-          if (this.apouForm[key]) apouExist = true;
+          if (this.apouForm['apou'][key]) apouExist = true;
         }
       }
       if (!apouExist) {
@@ -961,6 +983,22 @@ export default {
       return new Date().toLocaleTimeString();
     }
 
+        function toggleApovoli(index){
+      if(apouForm['apov'][index]==false) {
+        apouForm['apou'][index]=true
+        apouForm['apov'][index]=true
+      }else{
+        apouForm['apov'][index]=false
+      }
+    }
+
+    function toggleApousia(index){
+      if(apouForm['apou'][index]==true) {
+        apouForm['apov'][index]=false
+      }
+    }
+
+
     return {
       showApouForStu,
       params,
@@ -980,6 +1018,8 @@ export default {
       submitApouForm,
       errMsg,
       printTime,
+      toggleApovoli,
+      toggleApousia,
     };
   },
 };

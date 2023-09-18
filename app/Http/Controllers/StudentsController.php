@@ -34,7 +34,8 @@ class StudentsController extends Controller
     $tableLabels = ['Α/Α', 'ΑΜ', 'Απ', 'Επώνυμο', 'Όνομα', 'Πατρώνυμο', 'Email', 'Τμήματα', 'Ενέργεια'];
     $fields = ['', 'id', 'sumap', 'eponimo', 'onoma', 'patronimo', 'email', 'tmimataStr', ''];
     $tableApouLabels = ['Α/Α',  'Συν', 'Ημ/νια', 'Απ', '1η', '2η', '3η', '4η', '5η', '6η', '7η', 'Ενέργεια'];
-
+    $numOfHours = Program::getNumOfHours();
+    
     // έλεγχος των τιμών
     request()->validate([
       'page' => 'int',
@@ -60,7 +61,7 @@ class StudentsController extends Controller
 
     // παίρνω τους μαθητές
     $students = Student::select('id', 'eponimo', 'onoma', 'patronimo', 'email', 'sumap', 'tmimataStr')
-      ->with('apousies:student_id,id,date,apousies')->with('tmimata:student_id,id,tmima')
+      ->with('apousies:student_id,id,date,apousies,apovoles')->with('tmimata:student_id,id,tmima')
       ->leftjoin(
         DB::raw(
           "(SELECT  t1.student_id as student_id, sumap, tmimata as tmimataStr
@@ -178,9 +179,17 @@ class StudentsController extends Controller
           $arrApou = array();
           $num = 1;
           foreach (str_split($apou->apousies) as $value) {
-            $value == '1' ? $arrApou[$num] = true : $arrApou[$num] = false;
+            $value == '1' ? $arrApou['apou'][$num] = true : $arrApou['apou'][$num] = false;
             $num++;
           }
+          $num = 1;
+          if(!$apou->apovoles) $apou->apovoles = str_repeat("0", $numOfHours);
+          foreach (str_split($apou->apovoles) as $value) {
+            $value == '1' ? $arrApou['apov'][$num] = true : $arrApou['apov'][$num] = false;
+            $num++;
+          }
+
+
           $apou->sum = $daySum;
           $apou->tot = $daysSum;
           $apou->arrApou = $arrApou;
@@ -188,6 +197,7 @@ class StudentsController extends Controller
           $apou->date = Carbon::createFromFormat("Ymd", $apou->date)->format("Y-m-d");
           $apou->aa = $aa;
           unset($apou->apousies);
+          unset($apou->apovoles);
           unset($apou->student_id);
           $aa++;
         }
@@ -218,7 +228,8 @@ class StudentsController extends Controller
     ];
     $totalHours = Program::getNumOfHours();
     for ($i = 1; $i <= $totalHours; $i++) {
-      $formApousies[$i] = false;
+      $formApousies['apou'][$i] = false;
+      $formApousies['apov'][$i] = false;
     }
 
     return Inertia::render('Students', [
@@ -294,11 +305,16 @@ class StudentsController extends Controller
     if (!$date) $date = Carbon::now()->format('Ymd');
     $student_id = request('student_id');
     $apousies = '';
-    foreach ($data as $key => $value) {
+    foreach ($data['apou'] as $key => $value) {
       $value == true ? $apousies .= '1' :  $apousies .= '0';
     }
+    $apovoles = '';
+    foreach ($data['apov'] as $key => $value) {
+      $value == true ? $apovoles .= '1' :  $apovoles .= '0';
+    }
     Apousie::updateOrCreate(['student_id' => $student_id, 'date' => $date], [
-      'apousies' => $apousies
+      'apousies' => $apousies,
+      'apovoles' => $apovoles
     ]);
 
     return redirect()->back()->with(['message' => "Επιτυχής καταχώριση απουσιών"]);

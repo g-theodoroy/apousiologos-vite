@@ -10,6 +10,7 @@ class Apousie extends Model
         'student_id',
         'date',
         'apousies',
+        'apovoles',
         'teachers'
     ];
     public function student()
