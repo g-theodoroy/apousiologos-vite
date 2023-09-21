@@ -273,6 +273,7 @@
                       class="h-2 bg-gray-300 ml-1 mr-1 cursor-pointer rounded" 
                       :class="{
                         'bg-red-400': apouForm[student.id]['apov'][index],
+                        'bg-gray-700': index === activeHour,
                       }"
                       title="Αποβολή" 
                       @click="toggleApovoli(student.id, index)"
