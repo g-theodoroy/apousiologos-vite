@@ -611,6 +611,9 @@ export default {
     }
 
     function toggleApovoli( studentId, index){
+      if (checkDisabled(studentId, index) == true) {
+        return
+      }
       if(apouForm[studentId]['apov'][index]==false) {
         apouForm[studentId]['apou'][index]=true
         apouForm[studentId]['apov'][index]=true
@@ -620,6 +623,9 @@ export default {
     }
 
     function toggleApousia( studentId, index){
+      if (checkDisabled(studentId, index) == true) {
+        return
+      } 
       if(apouForm[studentId]['apou'][index]==true) {
         apouForm[studentId]['apov'][index]=false
       }
