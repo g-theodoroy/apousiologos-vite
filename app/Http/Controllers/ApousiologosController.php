@@ -55,8 +55,6 @@ class ApousiologosController extends Controller
 
       // αν δεν υπάρχουν απουσίες '0000000' δεν θα εισάγω τιμές
       if ($valueApou == $initApouValue) $valueApou = '';
-      if ($valueApov == $initApovValue);
-
 
       // αν δεν είναι κενό ενημερώνω αν υπάρχει ΑΜ+ημνια ή πρόσθέτω
       if ($valueApou) {
@@ -72,7 +70,7 @@ class ApousiologosController extends Controller
             'student_id' => $key,
             'date' => $date,
             'apousies' => $valueApou,
-            'apovoles' => $valueApov,
+            'apovoles' => $valueApov == $initApovValue ? '' : $valueApov,
             'teachers' => $teachValue
           ]);
         } else {

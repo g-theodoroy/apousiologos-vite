@@ -270,6 +270,11 @@ class ApousiologosService {
     
     public function sendEmailToParent($am, $date, $tmima = null)
     {
+        $numOfHours = Program::getNumOfHours();
+        $tableHeadStr = '';
+        for($i=1;$i<=$numOfHours;$i++){
+            $tableHeadStr .= "<th style=' border: 1px solid lightgrey;border-collapse: collapse;'>{$i}η</th>";
+        }
         $stuToSendEmail = request()->get('st') ? explode(',', request()->get('st')) : [];
         $date = str_replace("-", "", $date);
         $today = $date == Carbon::now()->format('Ymd');
@@ -292,6 +297,7 @@ class ApousiologosService {
         $emailData = array();
         foreach ($students as $student) {
             if (count($stuToSendEmail) && !in_array($student->id, $stuToSendEmail)) continue;
+            // απουσίες ημέρας
             $apousiesForDate = $student->apousies->where('date', $date)->pluck('apousies', 'date');
             $sumapp = array_sum(preg_split('//', $apousiesForDate[$date] ?? '')) > 0 ? array_sum(preg_split('//', $apousiesForDate[$date] ?? '')) : null;
             if (!$sumapp) continue;
@@ -311,7 +317,39 @@ class ApousiologosService {
                 $num++;
             }
             $apovolesStr = trim($apovolesStr, ", ");
-
+            // απουσίες ημέρας ΤΕΛΟΣ
+            // σύνολο απουσιών
+            $apousiesAll = $student->apousies->pluck('apousies', 'date')->toArray();
+            $apovolesAll = $student->apousies->pluck('apovoles', 'date')->toArray();
+            //ksort($apousiesAll);
+            //ksort($apovolesAll);
+            //krsort($apousiesAll);
+            //krsort($apovolesAll);
+            $totApou = 0;
+            $totApov = 0;
+            $tableData = "<table style=' border: 1px solid lightgrey;border-collapse: collapse;' ><tr><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>Ημ/νία</th><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>Συν</th><th>πμ</th>$tableHeadStr</tr>";
+            foreach ($apousiesAll as $d => $value) {
+                $d2show = Carbon::createFromFormat('Ymd', $d)->format('d/m/y');
+                $sumApou = array_sum(preg_split('//', $value)) > 0 ? array_sum(preg_split('//', $value)) : null;
+                $totApou += $sumApou;
+                $sumApov = array_sum(preg_split('//', $apovolesAll[$d])) > 0 ? array_sum(preg_split('//', $apovolesAll[$d])) : null;
+                $totApov += $sumApov;
+                $tableBodyStr = "<tr><td style=' border: 1px solid lightgrey;border-collapse: collapse;text-align: center'>$d2show</td><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>$sumApou</td><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>$sumApov</td>";
+                for ($i = 0; $i < $numOfHours; $i++) {
+                    
+                    $cellStr = substr($value,$i,1)=="1" ? "+" : "";
+                    if($apovolesAll[$d] && $apovolesAll[$d][$i]=="1"){
+                        $tableBodyStr .= "<th style=' border: 1px solid lightgrey;border-collapse: collapse;background: #ffab9a '>";
+                    }else{
+                        $tableBodyStr .= "<th style=' border: 1px solid lightgrey;border-collapse: collapse;'>";
+                    }
+                    $tableBodyStr .= $cellStr;
+                    $tableBodyStr .= "</th>";
+                }
+                $tableData .= $tableBodyStr;
+            }
+            $tableData .= '</table>';
+            // σύνολο απουσιών ΤΕΛΟΣ
             if (!$student->email) continue;
             $emailData[] = [
                 'email' => $student->email,
@@ -324,7 +362,10 @@ class ApousiologosService {
                 })->pluck('tmima')[0],
                 'sum' => $sumapp,
                 'hours' => $hoursStr,
-                'apovoles' => $apovolesStr
+                'apovoles' => $apovolesStr,
+                'totApou' => $totApou,
+                'totApov' => $totApov,
+                'tableData' => $tableData
             ];
         }
         $message = "Επιτυχής αποστολή email σε ";
@@ -343,6 +384,10 @@ class ApousiologosService {
                     $data["today"] = $data["today"] ? "ΣΗΜΕΡΙΝΕΣ" : "ΠΑΡΕΛΘΟΥΣΕΣ";
                     $data["sum"] = "ΣΥΝ: " . $data["sum"];
                     $data["hours"] = "ΩΡΕΣ: " . $data["hours"];
+                    $data["apovoles"] = "ΑΠΟΒΟΛΕΣ: " . $data["apovoles"];
+                    $data["totApou"] = "ΣΥΝ.ΑΠΟΥΣΙΩΝ: " . $data["totApou"];
+                    $data["totApov"] = "ΣΥΝ.ΑΠΟΒΟΛΩΝ: " . $data["totApov"];
+                    unset($data["tableData"]);
                     $data["user"] = auth()->user()->name;
                     Log::channel('emailSent')->info(implode(', ', $data));
                 }

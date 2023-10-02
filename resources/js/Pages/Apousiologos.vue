@@ -568,6 +568,9 @@ export default {
       for (let loopIndex in apouForm[id]['apov']) {
         if (loopIndex == 1) {
           newValue = !apouForm[id]['apov'][loopIndex];
+          if(newValue == true){
+            if(! confirm('Θέλετε να καταχωρίσετε Αποβολή;')) return
+          }
         }
         apouForm[id]['apov'][loopIndex] = newValue;
         if(newValue == true) apouForm[id]['apou'][loopIndex] = newValue;
@@ -611,10 +614,9 @@ export default {
     }
 
     function toggleApovoli( studentId, index){
-      if (checkDisabled(studentId, index) == true) {
-        return
-      }
+      if (checkDisabled(studentId, index) == true) return
       if(apouForm[studentId]['apov'][index]==false) {
+        if(! confirm('Θέλετε να καταχωρίσετε Αποβολή;')) return
         apouForm[studentId]['apou'][index]=true
         apouForm[studentId]['apov'][index]=true
       }else{
@@ -623,9 +625,6 @@ export default {
     }
 
     function toggleApousia( studentId, index){
-      if (checkDisabled(studentId, index) == true) {
-        return
-      } 
       if(apouForm[studentId]['apou'][index]==true) {
         apouForm[studentId]['apov'][index]=false
       }
