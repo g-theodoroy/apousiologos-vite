@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
+use App\Models\User;
 use Inertia\Inertia;
 use App\Models\Grade;
 use App\Models\Tmima;
@@ -61,7 +62,7 @@ class StudentsController extends Controller
 
     // παίρνω τους μαθητές
     $students = Student::select('id', 'eponimo', 'onoma', 'patronimo', 'email', 'sumap', 'tmimataStr')
-      ->with('apousies:student_id,id,date,apousies,apovoles')->with('tmimata:student_id,id,tmima')
+      ->with('apousies:student_id,id,date,apousies,apovoles,teachers')->with('tmimata:student_id,id,tmima')
       ->leftjoin(
         DB::raw(
           "(SELECT  t1.student_id as student_id, sumap, tmimata as tmimataStr
@@ -183,6 +184,11 @@ class StudentsController extends Controller
             $num++;
           }
           $num = 1;
+          foreach (explode('-',$apou->teachers) as $value) {
+            $value == '0' ? $arrApou['teach'][$num] = '' : $arrApou['teach'][$num] = $value;
+            $num++;
+          }
+          $num = 1;
           if(!$apou->apovoles) $apou->apovoles = str_repeat("0", $numOfHours);
           foreach (str_split($apou->apovoles) as $value) {
             $value == '1' ? $arrApou['apov'][$num] = true : $arrApou['apov'][$num] = false;
@@ -198,6 +204,7 @@ class StudentsController extends Controller
           $apou->aa = $aa;
           unset($apou->apousies);
           unset($apou->apovoles);
+          unset($apou->teachers);
           unset($apou->student_id);
           $aa++;
         }
@@ -230,10 +237,12 @@ class StudentsController extends Controller
     for ($i = 1; $i <= $totalHours; $i++) {
       $formApousies['apou'][$i] = false;
       $formApousies['apov'][$i] = false;
+      $formApousies['teach'][$i] = '';
     }
 
     return Inertia::render('Students', [
       'students' => $students,
+      'arrNames' => User::getNames(),
       'tableLabels' => $tableLabels,
       'tableApouLabels' => $tableApouLabels,
       'filters' => $filters,
@@ -311,7 +320,11 @@ class StudentsController extends Controller
     foreach ($data['apou'] as $key => $value) {
       if($value == true){
         $apousies .= '1';
-        $teachValue .= auth()->user()->id . '-';
+        if($data['teach'][$key]){
+          $teachValue .= $data['teach'][$key] . '-';
+        }else{
+          $teachValue .= auth()->user()->id . '-';
+        }
       }else{
         $apousies .= '0';
         $teachValue .= '0-';
@@ -323,7 +336,6 @@ class StudentsController extends Controller
       $value == true ? $apovoles .= '1' :  $apovoles .= '0';
     }
     if($apovoles == $initApovValue) $apovoles = '';
-
 
     Apousie::updateOrCreate(['student_id' => $student_id, 'date' => $date], [
       'apousies' => $apousies,

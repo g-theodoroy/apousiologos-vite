@@ -393,6 +393,7 @@
                                 :class="{
                                   'bg-red-100':apousies.arrApou.apov[index]
                                 }"
+                                :title="arrNames[apousies.arrApou.teach[index]]"
                               >
                                 {{ day ? "+" : "&nbsp;" }}
                               </td>
@@ -677,7 +678,7 @@
                :class="{
                   'bg-red-200':apouForm.apov[index]
                 }"
-
+                :title="arrNames[apouForm.teach[index]]"
               >
                 <span>{{ index }}η</span>
                 <BreezeCheckbox
@@ -741,6 +742,7 @@ import BreezeInput from "@/Components/Input.vue";
 import { watch, reactive, ref, onMounted, onUnmounted } from "vue";
 import { Inertia } from "@inertiajs/inertia";
 import { useForm } from "@inertiajs/inertia-vue3";
+import { usePage } from "@inertiajs/inertia-vue3";
 import axios from "axios";
 import GthSuccess from "@/Components/GthSuccess.vue";
 import BreezeCheckbox from "@/Components/Checkbox.vue";
@@ -758,6 +760,7 @@ export default {
   },
   props: {
     students: Object,
+    arrNames: Object,
     tableLabels: Array,
     filters: Object,
     fields: Array,
@@ -860,6 +863,7 @@ export default {
         for (var key in apousies.arrApou.apou) {
           this.apouForm['apou'][key] = apousies.arrApou.apou[key];
           this.apouForm['apov'][key] = apousies.arrApou.apov[key];
+          this.apouForm['teach'][key] = apousies.arrApou.teach[key];
         }
       } else {
         this.apouEditMode = false;
@@ -987,6 +991,7 @@ export default {
       if(apouForm['apov'][index]==false) {
         apouForm['apou'][index]=true
         apouForm['apov'][index]=true
+        apouForm['teach'][index]=usePage().props.value.auth.user.id
       }else{
         apouForm['apov'][index]=false
       }
@@ -995,6 +1000,9 @@ export default {
     function toggleApousia(index){
       if(apouForm['apou'][index]==true) {
         apouForm['apov'][index]=false
+        apouForm['teach'][index]=''
+      }else{
+        apouForm['teach'][index]=usePage().props.value.auth.user.id
       }
     }
 
