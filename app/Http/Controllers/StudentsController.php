@@ -298,6 +298,8 @@ class StudentsController extends Controller
    */
   public function apousiesStore(Request $request)
   {
+    $numOfHours = Program::getNumOfHours();
+    $initApovValue = str_repeat("0", $numOfHours);
     // παίρνω τα στοιχεία των απουσιών (τιμες boolean true - false)
     $data = request()->except(['student_id', 'date']);
     $postDate = request('date');
@@ -305,16 +307,28 @@ class StudentsController extends Controller
     if (!$date) $date = Carbon::now()->format('Ymd');
     $student_id = request('student_id');
     $apousies = '';
+    $teachValue = '';
     foreach ($data['apou'] as $key => $value) {
-      $value == true ? $apousies .= '1' :  $apousies .= '0';
+      if($value == true){
+        $apousies .= '1';
+        $teachValue .= auth()->user()->id . '-';
+      }else{
+        $apousies .= '0';
+        $teachValue .= '0-';
+      }
     }
+    $teachValue = rtrim($teachValue, '-');
     $apovoles = '';
     foreach ($data['apov'] as $key => $value) {
       $value == true ? $apovoles .= '1' :  $apovoles .= '0';
     }
+    if($apovoles == $initApovValue) $apovoles = '';
+
+
     Apousie::updateOrCreate(['student_id' => $student_id, 'date' => $date], [
       'apousies' => $apousies,
-      'apovoles' => $apovoles
+      'apovoles' => $apovoles,
+      'teachers' => $teachValue
     ]);
 
     return redirect()->back()->with(['message' => "Επιτυχής καταχώριση απουσιών"]);
