@@ -261,10 +261,10 @@
                       v-model="apouForm[student.id]['apou'][index]"
                       :checked="apouForm[student.id]['apou'][index]"
                       :disabled="checkDisabled(student.id, index)"
-                      :title="arrNames[arrTeachers[student.id][index]] !== undefined 
-                      ? arrNames[arrTeachers[student.id][index]]
-                      : arrTeachers[student.id][index] ?? 
-                      'teacher_id ' + arrTeachers[student.id][index]
+                      :title="arrNames[apouForm[student.id]['teach'][index]] !== undefined 
+                      ? arrNames[apouForm[student.id]['teach'][index]]
+                      : apouForm[student.id]['teach'][index] ?? 
+                      'teacher_id ' + apouForm[student.id]['teach'][index]
                       "
                       @click="toggleApousia(student.id, index)"
                     />
@@ -390,7 +390,6 @@ export default {
     allowTeachersSaveAtNotActiveHour: Number,
     allowTeachersEmail: Number,
     arrApousies: Object,
-    arrTeachers: Object,
     arrNames: Object,
     allowPastDays: Boolean,
     isToday: Boolean,
@@ -531,7 +530,7 @@ export default {
 
       let chkNotSameTeacher = false
       props.arrStudents.forEach((student) => {
-        if(props.arrTeachers[student.id][index] !== '' && !(props.arrTeachers[student.id][index] == usePage().props.value.auth.user.id)) {
+        if(props.arrApousies[student.id]['teach'][index] !== '' && !(props.arrApousies[student.id]['teach'][index] == usePage().props.value.auth.user.id)) {
           chkNotSameTeacher =  true
         }
       });
@@ -609,7 +608,7 @@ export default {
       if(usePage().props.value.auth.user.permissions.admin) return false
       if(props.activeHour == index) return false
       if(varHoursUnlocked.value && props.allowTeachersEditOthersApousies) return false
-      if(varHoursUnlocked.value && (!props.arrTeachers[studentId][index] || usePage().props.value.auth.user.id == props.arrTeachers[studentId][index])) return false
+      if(varHoursUnlocked.value && (!props.arrApousies[studentId]['teach'][index] || usePage().props.value.auth.user.id == props.arrApousies[studentId]['teach'][index])) return false
       return true
     }
 
@@ -619,6 +618,7 @@ export default {
         if(! confirm('Θέλετε να καταχωρίσετε Αποβολή;')) return
         apouForm[studentId]['apou'][index]=true
         apouForm[studentId]['apov'][index]=true
+        apouForm[studentId]['teach'][index]=usePage().props.value.auth.user.id
       }else{
         apouForm[studentId]['apov'][index]=false
       }
@@ -627,6 +627,9 @@ export default {
     function toggleApousia( studentId, index){
       if(apouForm[studentId]['apou'][index]==true) {
         apouForm[studentId]['apov'][index]=false
+        apouForm[studentId]['teach'][index]=''
+      }else{
+        apouForm[studentId]['teach'][index]=usePage().props.value.auth.user.id
       }
     }
 

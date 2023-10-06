@@ -101,7 +101,6 @@ class ApousiologosService {
         $arrSendEmail = array();
         $arrApousies = array();
         $arrApousies['date'] = Carbon::createFromFormat("!Ymd", $date)->format("Y-m-d");
-        $arrTeachers = array();
         foreach ($students as $stuApFoD) {
             // ταξινόμιση τμημάτων με το μήκος τους
             $tmimata = $stuApFoD->tmimata->sortBy(function ($string) {
@@ -160,10 +159,10 @@ class ApousiologosService {
                     $value == '0' ? $arrTeach[$num] = '' : $arrTeach[$num] = $value;
                     $num++;
                 }
-                $arrTeachers[$stuApFoD->id] = $arrTeach;
+                $arrApousies[$stuApFoD->id]["teach"] = $arrTeach;
             } else {
                 // αν δεν έχει απουσίες βάζω τον αρχικοποιημένο πριν πίνακα
-                $arrTeachers[$stuApFoD->id] = $initTeachArray;
+                $arrApousies[$stuApFoD->id]["teach"] = $initTeachArray;
             }
 
         }
@@ -254,7 +253,6 @@ class ApousiologosService {
             'arrStudents' => $arrStudents,
             'arrSendEmail' => $arrSendEmail,
             'arrApousies' => $arrApousies,
-            'arrTeachers' => $arrTeachers,
             'arrNames' => User::getNames(),
             'setCustomDate' => $setCustomDate,
             'allowTeachersSaveAtNotActiveHour' => $allowTeachersSaveAtNotActiveHour,

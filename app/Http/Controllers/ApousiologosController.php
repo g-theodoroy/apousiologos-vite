@@ -43,15 +43,21 @@ class ApousiologosController extends Controller
     foreach ($data as $key => $arrValue) {
 
       $valueApou = '';
-      foreach ($arrValue['apou'] as $num => $val) {
+      foreach ($arrValue['apou'] as $val) {
         $val == true ? $valueApou .= '1' :  $valueApou .= '0';
       }
 
       $valueApov = '';
-      foreach ($arrValue['apov'] as $num => $val) {
+      foreach ($arrValue['apov'] as $val) {
         $val == true ? $valueApov .= '1' :  $valueApov .= '0';
       }
 
+      $valueTeach = '';
+      foreach ($arrValue['teach'] as $val) {
+        //dd($val);
+        $val  ?   $valueTeach .= $val . '-' : $valueTeach .= '0-';
+      }
+      $valueTeach = rtrim($valueTeach,'-');
 
       // αν δεν υπάρχουν απουσίες '0000000' δεν θα εισάγω τιμές
       if ($valueApou == $initApouValue) $valueApou = '';
@@ -60,51 +66,17 @@ class ApousiologosController extends Controller
       if ($valueApou) {
         $apousia = Apousie::where('student_id', $key)->where('date', $date)->first();
         if (!$apousia) {
-          $teachValue = '';
-          // φτιάχνω την τιμή για αποθήκευση '1100100'
-          foreach ($arrValue['apou'] as $num => $val) {
-            $val == true ? $teachValue .= auth()->user()->id . '-' :  $teachValue .= '0-';
-          }
-          $teachValue = rtrim($teachValue, '-');
           Apousie::create([
             'student_id' => $key,
             'date' => $date,
             'apousies' => $valueApou,
             'apovoles' => $valueApov == $initApovValue ? '' : $valueApov,
-            'teachers' => $teachValue
+            'teachers' => $valueTeach
           ]);
         } else {
-          // παίρνω τις παλιες απουσίες -
-          $oldValueApou = $apousia->apousies;
-          $oldValueApov = $apousia->apovoles ? $apousia->apovoles : $initApovValue ;
-          // παίρνω τους παλιους καθηγητές
-          $teachValue = explode('-', $apousia->teachers);
-
-          for ($i = 0; $i < $numOfHours; $i++) {
-            // αν δεν έχει αλλαγή προσπερνάω
-            if ($oldValueApou[$i] == $valueApou[$i] && $oldValueApov[$i] == $valueApov[$i] ) continue;
-            // αν ΕΧΕΙ αλλαγή προσπερνάω
-            // η νέα τιμή 1 = απουσία
-            if ($valueApou[$i] == 1) {
-              $teachValue[$i] = auth()->user()->id;
-            } else {
-              // σβήνω αν είναι admin ή allowTeachersEditOthersApousies
-              if (auth()->user()->permissions['admin'] || $allowTeachersEditOthersApousies) {
-                $teachValue[$i] = 0;
-              } else {
-                // σβηνω αν είναι ίδιος ο χρήστης
-                if (auth()->user()->id == $teachValue[$i]) {
-                  $teachValue[$i] = 0;
-                } else {
-                  // αν ΔΕΝ είναι ίδιος ο χρήστης επαναφέρω τιμή
-                  $valueApou[$i] = $oldValueApou[$i];
-                }
-              }
-            }
-          }
           $apousia->apousies = $valueApou;
           $apousia->apovoles = $valueApov == $initApovValue ? '' : $valueApov;
-          $apousia->teachers = implode('-', $teachValue);
+          $apousia->teachers = $valueTeach;
           $apousia->save();
         }
       } else {
