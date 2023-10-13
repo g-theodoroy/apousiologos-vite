@@ -86,8 +86,8 @@ class ApousiologosService {
 
             // παίρνω τα στοιχεία των μαθητών ταξινομημένα κσι φιλτράρω μόνο τους ΑΜ που έχει το τμήμα
             $students = Student::select('id', 'eponimo', 'onoma', 'email')->orderby('eponimo')->orderby('onoma')->orderby('patronimo')->with('tmimata:student_id,tmima')->get()->only($student_ids);
-        } else { // δεν είναι επιλεγμένο τμήμα = όλοι όσοι έχουν απουσίες
-
+        } else { 
+            // δεν είναι επιλεγμένο τμήμα = όλοι όσοι έχουν απουσίες
             // βρίσκω τους μαθητές που έχουν απουσίες την συγκεκριμμένη ημέρα
             $students = Student::select('id', 'eponimo', 'onoma', 'email')
                 ->whereHas('apousies', function ($query) use ($date) {
@@ -305,16 +305,18 @@ class ApousiologosService {
                 $value == '1' ?  $hoursStr .= $num . "η " : $hoursStr .= "__  ";
                 $num++;
             }
-            $hoursStr = trim($hoursStr, ", ");
+            //$hoursStr = trim($hoursStr);
 
             $apovolesForDate = $student->apousies->where('date', $date)->pluck('apovoles', 'date');
             $num = 1;
             $apovolesStr = '';
-            foreach (str_split($apovolesForDate[$date]) as $value) {
-                $value == '1' ?  $apovolesStr .= $num . "η " : $apovolesStr .= "__  ";
-                $num++;
+            if($apovolesForDate){
+                foreach (str_split($apovolesForDate[$date]) as $value) {
+                    $value == '1' ?  $apovolesStr .= $num . "η " : $apovolesStr .= "__  ";
+                    $num++;
+                }
+                //$apovolesStr = trim($apovolesStr);
             }
-            $apovolesStr = trim($apovolesStr, ", ");
             // απουσίες ημέρας ΤΕΛΟΣ
             // σύνολο απουσιών
             $apousiesAll = $student->apousies->pluck('apousies', 'date')->toArray();

@@ -92,7 +92,7 @@
                         index == this.tableLabels.length - 4,
                     }"
                     :title="
-                      index > 0 && index < 8
+                      index > 0 && index < 9
                         ? params.field !== fields[index] ||
                           (params.field == fields[index] &&
                             params.direction == 'desc')
@@ -162,6 +162,16 @@
                       "
                     >
                       {{ student.sumap == 0 ? "&nbsp;" : student.sumap }}
+                    </td>
+                    <td
+                      class="
+                        border-grey-light border
+                        p-2
+                        text-left
+                        sm:text-center
+                      "
+                    >
+                      {{ student.sumapov == 0 ? "&nbsp;" : student.sumapov }}
                     </td>
                     <td class="border-grey-light border p-2">
                       {{ student.eponimo }}
@@ -380,6 +390,21 @@
                                 }}
                               </td>
                               <td
+                                class="
+                                  border-grey-light border
+                                  p-1
+                                  sm:px-2
+                                  text-center
+                                  font-bold
+                                  hidden
+                                  sm:table-cell
+                                "
+                              >
+                                {{
+                                  apousies.sumapov == 0 ? "&nbsp;" : apousies.sumapov
+                                }}
+                              </td>
+                              <td
                                 v-for="(day, index) in apousies.arrApou['apou']"
                                 :key="index"
                                 class="
@@ -440,6 +465,7 @@
                                       :class="{
                                         'opacity-20': !chk,
                                         'font-medium': chk,
+                                        'bg-red-200':apousies.arrApou.apov[index]
                                       }"
                                     >
                                       {{ index + "η" }}

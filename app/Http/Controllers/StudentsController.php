@@ -32,16 +32,16 @@ class StudentsController extends Controller
   public function index()
   {
     // μεταβλητές για το table
-    $tableLabels = ['Α/Α', 'ΑΜ', 'Απ', 'Επώνυμο', 'Όνομα', 'Πατρώνυμο', 'Email', 'Τμήματα', 'Ενέργεια'];
-    $fields = ['', 'id', 'sumap', 'eponimo', 'onoma', 'patronimo', 'email', 'tmimataStr', ''];
-    $tableApouLabels = ['Α/Α',  'Συν', 'Ημ/νια', 'Απ', '1η', '2η', '3η', '4η', '5η', '6η', '7η', 'Ενέργεια'];
+    $tableLabels = ['Α/Α','ΑΜ','Απ', 'Πμ', 'Επώνυμο', 'Όνομα', 'Πατρώνυμο', 'Email', 'Τμήματα', 'Ενέργεια'];
+    $fields = ['', 'id','sumap', 'sumapov', 'eponimo', 'onoma', 'patronimo', 'email', 'tmimataStr', ''];
+    $tableApouLabels = ['Α/Α',  'Συν', 'Ημ/νια','Απ', 'Πμ', '1η', '2η', '3η', '4η', '5η', '6η', '7η', 'Ενέργεια'];
     $numOfHours = Program::getNumOfHours();
     
     // έλεγχος των τιμών
     request()->validate([
       'page' => 'int',
       'rows' => 'int',
-      'field' => "in:id,sumap,eponimo,onoma,patronimo,email,tmimataStr",
+      'field' => "in:id,sumap,sumapov,eponimo,onoma,patronimo,email,tmimataStr",
       'direction' => 'in:asc,desc'
     ]);
 
@@ -61,11 +61,11 @@ class StudentsController extends Controller
     $filters['direction'] = request()->direction;
 
     // παίρνω τους μαθητές
-    $students = Student::select('id', 'eponimo', 'onoma', 'patronimo', 'email', 'sumap', 'tmimataStr')
+    $students = Student::select('id', 'eponimo', 'onoma', 'patronimo','email','sumap', 'sumapov', 'tmimataStr')
       ->with('apousies:student_id,id,date,apousies,apovoles,teachers')->with('tmimata:student_id,id,tmima')
       ->leftjoin(
         DB::raw(
-          "(SELECT  t1.student_id as student_id, sumap, tmimata as tmimataStr
+        "(SELECT  t1.student_id as student_id, sumap, sumapov, tmimata as tmimataStr
             FROM
               (SELECT student_id, GROUP_CONCAT(tmima, ', ') as tmimata
                 FROM
@@ -77,7 +77,7 @@ class StudentsController extends Controller
 
                 left join
 
-                    (select student_id, sum(sumapday) as sumap
+                    (select student_id, sum(sumapday) as sumap, sum(sumapovday) as sumapov
                       FROM
                         (select student_id,
                           cast(apousies % 10000000 / 1000000 as int)
@@ -86,7 +86,14 @@ class StudentsController extends Controller
                           +cast(apousies % 10000 / 1000 as int)
                           +cast(apousies % 1000 / 100 as int)
                           + cast(apousies % 100 / 10 as int)
-                          + cast(apousies % 10 as int) as sumapday
+                          + cast(apousies % 10 as int) as sumapday,
+                          cast(apovoles % 10000000 / 1000000 as int)
+                          +cast(apovoles % 1000000 / 100000 as int)
+                          +cast(apovoles % 100000 / 10000 as int)
+                          +cast(apovoles % 10000 / 1000 as int)
+                          +cast(apovoles % 1000 / 100 as int)
+                          + cast(apovoles % 100 / 10 as int)
+                          + cast(apovoles % 10 as int) as sumapovday
                             from apousies)
                           group by student_id) as t2
 
@@ -94,9 +101,9 @@ class StudentsController extends Controller
 
           UNION
 
-          SELECT  t2.student_id as student_id, sumap, tmimata as tmimataStr
+          SELECT  t2.student_id as student_id, sumap, sumapov, tmimata as tmimataStr
             FROM
-              (select student_id, sum(sumapday) as sumap
+              (select student_id, sum(sumapday) as sumap, sum(sumapovday) as sumapov
                 FROM
                   (select student_id,
                     cast(apousies % 10000000 / 1000000 as int)
@@ -105,7 +112,14 @@ class StudentsController extends Controller
                     +cast(apousies % 10000 / 1000 as int)
                     +cast(apousies % 1000 / 100 as int)
                     + cast(apousies % 100 / 10 as int)
-                    + cast(apousies % 10 as int) as sumapday
+                    + cast(apousies % 10 as int) as sumapday,
+                    cast(apovoles % 10000000 / 1000000 as int)
+                    +cast(apovoles % 1000000 / 100000 as int)
+                    +cast(apovoles % 100000 / 10000 as int)
+                    +cast(apovoles % 10000 / 1000 as int)
+                    +cast(apovoles % 1000 / 100 as int)
+                    + cast(apovoles % 100 / 10 as int)
+                    + cast(apovoles % 10 as int) as sumapovday
                       from apousies)
                     group by student_id) as t2
 
@@ -131,6 +145,7 @@ class StudentsController extends Controller
       $searchStr = request()->search ?? '';
       $students = $students->where('id', 'LIKE',  '%' . $searchStr . '%')
         ->orWhere('sumap', 'LIKE', '%' . $searchStr . '%')
+        ->orWhere('sumapov', 'LIKE', '%' . $searchStr . '%')
         ->orWhere('eponimo', 'LIKE', '%' . $searchStr . '%')
         ->orWhere('eponimo', 'LIKE', '%' . mb_strtoupper($searchStr) . '%')
         ->orWhere('onoma', 'LIKE', '%' . $searchStr . '%')
@@ -138,8 +153,8 @@ class StudentsController extends Controller
         ->orWhere('patronimo', 'LIKE', '%' . $searchStr . '%')
         ->orWhere('patronimo', 'LIKE', '%' . mb_strtoupper($searchStr) . '%')
         ->orWhere('email', 'LIKE', '%' . $searchStr . '%')
-        ->orWhere('tmimata', 'LIKE', '%' . $searchStr . '%')
-        ->orWhere('tmimata', 'LIKE', '%' . mb_strtoupper($searchStr) . '%');
+        ->orWhere('tmimataStr', 'LIKE', '%' . $searchStr . '%')
+        ->orWhere('tmimataStr', 'LIKE', '%' . mb_strtoupper($searchStr) . '%');
     }
 
     // ταξινόμηση
@@ -173,10 +188,13 @@ class StudentsController extends Controller
       if ($student->apousies) {
         $apousies = $student->apousies->sortBy('date');
         $daysSum = 0;
+        $daysApovSum = 0;
         $aa = 1;
         foreach ($apousies as $apou) {
           $daySum = array_sum(preg_split('//', $apou->apousies ?? '')) > 0 ? array_sum(preg_split('//', $apou->apousies ?? '')) : null;
+          $dayApovSum = array_sum(preg_split('//', $apou->apovoles ?? '')) > 0 ? array_sum(preg_split('//', $apou->apovoles ?? '')) : null;
           $daysSum += $daySum;
+          $daysApovSum += $dayApovSum;
           $arrApou = array();
           $num = 1;
           foreach (str_split($apou->apousies) as $value) {
@@ -198,6 +216,8 @@ class StudentsController extends Controller
 
           $apou->sum = $daySum;
           $apou->tot = $daysSum;
+          $apou->sumapov = $dayApovSum;
+          $apou->totapov = $daysApovSum;
           $apou->arrApou = $arrApou;
           $apou->dateShow = Carbon::createFromFormat("Ymd", $apou->date)->format("d/m/Y");
           $apou->date = Carbon::createFromFormat("Ymd", $apou->date)->format("Y-m-d");
