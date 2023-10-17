@@ -310,7 +310,7 @@ class ApousiologosService {
             $apovolesForDate = $student->apousies->where('date', $date)->pluck('apovoles', 'date');
             $num = 1;
             $apovolesStr = '';
-            if($apovolesForDate){
+            if($apovolesForDate[$date]){
                 foreach (str_split($apovolesForDate[$date]) as $value) {
                     $value == '1' ?  $apovolesStr .= $num . "η " : $apovolesStr .= "__  ";
                     $num++;
