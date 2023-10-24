@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateAnathesisTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -13,11 +13,9 @@ class CreateAnathesisTable extends Migration
      */
     public function up()
     {
-        Schema::create('anathesis', function (Blueprint $table) {
-            $table->increments('id');
-            $table->string('tmima');
-            $table->string('mathima');
-            $table->timestamps();
+        Schema::create('anathesi_user', function (Blueprint $table) {
+            $table->integer('anathesi_id')->unsigned();
+            $table->integer('user_id')->unsigned();
         });
     }
 
@@ -28,6 +26,6 @@ class CreateAnathesisTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('anathesis');
+        Schema::dropIfExists('anathesi_user');
     }
-}
+};

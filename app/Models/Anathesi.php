@@ -10,9 +10,9 @@ class Anathesi extends Model
   protected $fillable = [
     'user_id', 'tmima', 'mathima'
   ];
-  public function user()
+  public function users()
   {
-    return $this->belongsTo('App\Models\User');
+    return $this->belongsToMany(User::class);
   }
   public function students()
   {

@@ -62,14 +62,22 @@ class TeachersController extends Controller
     }
 
     // παίρνω τους καθηγητές
-    $kathigites = User::with('anatheseis:user_id,id,tmima,mathima')->select('id', 'name', 'email', 'role_id', 'strAnatheseis')
+    $kathigites = User::with('anatheseis:id,tmima,mathima')->select('id', 'name', 'email', 'role_id', 'strAnatheseis')
       ->leftjoin(DB::raw("
                   (select user_id, GROUP_CONCAT(anathesi, '<br>') AS strAnatheseis
                   from
-                      (select user_id, $concatStr as anathesi
-                          from anathesis
-                          order by length(tmima), tmima, mathima)
-                  group by user_id)"), 'id', '=', 'user_id');
+
+                  (select user_id, tmima || ' -> ' || mathima as anathesi
+
+                  from anathesis left join anathesi_user
+                  on id = anathesi_id
+
+                  order by length(tmima), tmima, mathima)
+
+                  group by user_id)
+                  
+                  "), 'id', '=', 'user_id');
+
 
     // φιλτράρω με ότι ήρθε από την πληκτρολόγηση στο input
     if (request()->search) {
@@ -184,13 +192,12 @@ class TeachersController extends Controller
       $message = "Επιτυχής ενημέρωση καθηγητή.";
     }
     // κρατάω τα id των υπαρχόντων αναθέσεων
-    $oldAnatheseisIds = Anathesi::where('user_id', $user->id)->pluck('id');
+    $oldAnatheseisIds = $user->anatheseis()->pluck("anathesi_id");
 
     $newAnatheseisIds = [];
     foreach ($request->anathesi as $anathesi) {
       if (trim($anathesi['tmima'])) {
         $newAnathesi = Anathesi::updateOrCreate(['tmima' => trim($anathesi['tmima']), 'mathima' => trim($anathesi['mathima'])], [
-          'user_id' => $user->id,
           'tmima' => trim($anathesi['tmima']),
           'mathima' => trim($anathesi['mathima']),
         ]);
@@ -198,16 +205,17 @@ class TeachersController extends Controller
         $newAnatheseisIds[] = $newAnathesi->id;
       }
     }
-    // ελέγχω αν οι παλιές αναθέσεις υπάρχουν στον πίνακα των νέων
-    // και αν δεν υπάρχουν τότε
-    //      αν έχουν καταχωριστεί βαθμοί αποδεσμεύεται η ανάθεση από τον χρήστη user_id = 0
-    //      αν ΔΕΝ έχουν καταχωριστεί βαθμοί διαγράφεται η ανάθεση
-    foreach ($oldAnatheseisIds as $anathId) {
-      if (!in_array($anathId, $newAnatheseisIds)) {
-        if (Grade::where('anathesi_id', $anathId)->count()) {
-          Anathesi::where('id', $anathId)->update(['user_id' => 0]);
-        } else {
-          Anathesi::where('id', $anathId)->delete();
+
+    // συγχρονίζω τις αναθέσεις του χρήστη
+    $user->anatheseis()->sync($newAnatheseisIds);
+
+    // ελέγχω αν οι παλιές αναθέσεις έχουν χρήστες ή / και βαθμούς
+    // αν ΔΕΝ έχουν χρήστη και ΔΕΝ έχουν καταχωριστεί βαθμοί διαγράφεται η ανάθεση
+    foreach ($oldAnatheseisIds as $anathesi_id) {
+      $anathesi = Anathesi::find($anathesi_id);
+      if (!$anathesi->users()->count()) {
+         if (!Grade::where('anathesi_id', $anathesi_id)->count()) {
+          $anathesi->delete();
         }
       }
     }
@@ -216,8 +224,25 @@ class TeachersController extends Controller
 
   public function delete($id)
   {
-    User::where('id', $id)->delete();
-    Anathesi::where('user_id', $id)->delete();
+    // παίρνω τον χρήστη
+    $user = User::find($id);
+    // παίρνω τις αναθέσεις του χρήστη
+    $anathesi_ids = $user->anatheseis()->pluck("anathesi_id");
+    // αποσυνδέω τον χρήστη από όλες τις αναθέσεις
+    $user->anatheseis()->detach();
+    // ελέγχω για όλες τις αναθέσεις που είχε ο χρήστης
+    // αν ΔΕΝ έχουν χρήστη και ΔΕΝ έχουν καταχωριστεί βαθμοί διαγράφεται η ανάθεση
+    foreach ($anathesi_ids as $anathesi_id) {
+      $anathesi = Anathesi::find($anathesi_id);
+      if (!$anathesi->users()->count()) {
+        if (!Grade::where('anathesi_id', $anathesi_id)->count()) {
+          $anathesi->delete();
+        }
+      }
+    }
+    // διαγράφω το χρήστη
+    $user->delete();
+    // διαγράφω τα διαγωνίσματα
     Event::where('user_id', $id)->delete();
     return redirect()->back()->with(['message' => 'Επιτυχής διαγραφή καθηγητή.']);
   }

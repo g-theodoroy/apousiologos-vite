@@ -81,11 +81,12 @@ class UsersImport implements OnEachRow, WithStartRow, WithValidation, SkipsOnFai
         if (trim($row[4])) {
           if (self::$user_id) {
             self::$anatheseis++;
-            Anathesi::updateOrCreate(['user_id' => self::$user_id, 'tmima' => trim($row[4]), 'mathima' => trim($row[5])], [
-              'user_id' => self::$user_id,
+            $anathesi = Anathesi::updateOrCreate(['tmima' => trim($row[4]), 'mathima' => trim($row[5])], [
               'tmima' => trim($row[4]),
               'mathima' => trim($row[5]),
             ]);
+            // προσθέτω στο pivot την εγγραφή αναθεση <-> χρήστης
+            $anathesi->users()->attach(self::$user_id);
           }
         }
       }
@@ -97,11 +98,12 @@ class UsersImport implements OnEachRow, WithStartRow, WithValidation, SkipsOnFai
       if (trim($row[4])) {
         if (self::$user_id) {
           self::$anatheseis++;
-          Anathesi::updateOrCreate(['user_id' => self::$user_id, 'tmima' => trim($row[4]), 'mathima' => trim($row[5])], [
-            'user_id' => self::$user_id,
+          $anathesi = Anathesi::updateOrCreate(['tmima' => trim($row[4]), 'mathima' => trim($row[5])], [
             'tmima' => trim($row[4]),
             'mathima' => trim($row[5]),
           ]);
+          // προσθέτω στο pivot την εγγραφή αναθεση <-> χρήστης
+          $anathesi->users()->attach(self::$user_id);
         }
       }
     }
