@@ -125,7 +125,7 @@ class ExamsService {
 
         // αν δηλώνει ο Διαχειριστής διαγώνισμα αυτό δηλώνεται στον καθηγητή που το έχει ανάθεση
         if (Auth::user()->permissions['admin']) {
-            $user_id = Anathesi::where('mathima', request()->mathima)->where('tmima', request()->tmima1)->first()->user_id ?? auth()->user()->id;
+            $user_id = Anathesi::where('mathima', request()->mathima)->where('tmima', request()->tmima1)->first()->users()->first()->id ?? auth()->user()->id;
         }
 
         $title = request()->tmima2  ?  request()->tmima1 . '-' . request()->tmima2  : request()->tmima1;
@@ -308,7 +308,9 @@ class ExamsService {
         if (Auth::user()->permissions['admin']) {
             $anatheseis = $this->tmimataList();
         } else {
-            $anatheseis = Anathesi::where('user_id', $user_id)->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->unique()->toArray();
+            $anatheseis = Anathesi::whereHas('users', function ($query) {
+                $query->where('id', Auth::user()->id);
+            })->orderByRaw('LENGTH(tmima)')->orderby('tmima')->pluck('tmima')->unique()->toArray();
         }
 
         // ποια τμήματα είναι ελεύθερα για τον καθηγητή
@@ -402,7 +404,9 @@ class ExamsService {
 
         $mathimata = Anathesi::select('mathima');
         if (!Auth::user()->permissions['admin']) {
-            $mathimata = $mathimata->where('user_id', Auth::user()->id);
+            $mathimata = $mathimata->whereHas('users', function ($query) {
+                $query->where('id', Auth::user()->id);
+            });
         }
 
         $mathimata = $mathimata->distinct()->orderBy('mathima')->pluck('mathima')->toArray();
