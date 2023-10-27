@@ -57,13 +57,15 @@ class NoGradesExport implements FromCollection, WithHeadings, ShouldAutoSize, Wi
             $anatheseis = Anathesi::whereNotIn('id', $insertedAnatheseis);
         }
         if(auth()->user()->permissions['teacher']){
-            $anatheseis = $anatheseis->where('user_id', auth()->user()->id);
+            $anatheseis = $anatheseis->whereHas('users', function ($query) {
+                $query->where('id', Auth::user()->id);
+            });
         }
-        $anatheseis = $anatheseis->with('user:id,name')->orderby('user_id')->orderby('tmima')->get(['user_id', 'tmima', 'mathima'])->toArray();
+        $anatheseis = $anatheseis->with('users:id,name')->get()->toArray();
         
         $data = [];
         foreach ($anatheseis as $not) {
-            $data[] = [  $not['user']['name'], $not['tmima'],  $not['mathima']];
+          $data[] = [  $not['users'][0]['name'], $not['tmima'],  $not['mathima']];
         }
         
         array_multisort(

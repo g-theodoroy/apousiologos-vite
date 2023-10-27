@@ -50,13 +50,15 @@ class NoGradesStudentsExport implements FromCollection, WithHeadings, ShouldAuto
             foreach ($stu->tmimata as $tmima) {
                 $anatheseis = Anathesi::whereTmima($tmima['tmima']);
                 if(auth()->user()->permissions['teacher']){
-                    $anatheseis = $anatheseis->where('user_id', auth()->user()->id);
+                    $anatheseis = $anatheseis->whereHas('users', function ($query) {
+                        $query->where('id', Auth::user()->id);
+                    });
                 }
-                $anatheseis = $anatheseis->with('user:id,name')->orderby('mathima')->get();
+                $anatheseis = $anatheseis->with('users:id,name')->orderby('mathima')->get();
                 foreach ($anatheseis as $anathesi) {
                     $gradeExists = Grade::where('anathesi_id', $anathesi->id)->where('student_id', $stu['id'])->where('period_id', $activeGradePeriod)->count();
                     if (!$gradeExists) {
-                        $data[] = [$stu->id, $stu->eponimo, $stu->onoma, $tmima->tmima, $anathesi->mathima, $anathesi->user->name];
+                        $data[] = [$stu->id, $stu->eponimo, $stu->onoma, $tmima->tmima, $anathesi->mathima, $anathesi->users()->first()->name];
                     }
                 }
             }
