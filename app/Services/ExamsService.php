@@ -125,7 +125,11 @@ class ExamsService {
 
         // αν δηλώνει ο Διαχειριστής διαγώνισμα αυτό δηλώνεται στον καθηγητή που το έχει ανάθεση
         if (Auth::user()->permissions['admin']) {
-            $user_id = Anathesi::where('mathima', request()->mathima)->where('tmima', request()->tmima1)->first()->users()->first()->id ?? auth()->user()->id;
+            if(Anathesi::where('mathima', request()->mathima)->where('tmima', request()->tmima1)->first()){
+                $user_id = Anathesi::where('mathima', request()->mathima)->where('tmima', request()->tmima1)->first()->users()->first()->id ?? auth()->user()->id;
+            }else{
+                $user_id = auth()->user()->id;
+            }
         }
 
         $title = request()->tmima2  ?  request()->tmima1 . '-' . request()->tmima2  : request()->tmima1;
