@@ -54,6 +54,8 @@
 
 &nbsp;
 
+@if(config('gth.emails.informForTotalApousies'))
+
 # Ενημέρωση για το σύνολο των απουσιών
 
 &nbsp;
@@ -85,6 +87,8 @@
 &nbsp;
 
 &nbsp;
+
+@endif
 
 ## Από τη Διεύθυνση του {{ \App\Models\Setting::getValueOf('schoolName') }}
 

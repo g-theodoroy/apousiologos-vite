@@ -32,10 +32,12 @@ return [
      * email 
      *  αποστολή και στο email μας
      *  καταγραφή σε Log
+     *  ενημέρωση για το σύνολο των απουσιών στο email
      */
     'emails' => [
         'cc' => false,
-        'log' => true
+        'log' => true,
+        'informForTotalApousies' => true
     ],
 
 

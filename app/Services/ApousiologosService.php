@@ -318,38 +318,47 @@ class ApousiologosService {
                 //$apovolesStr = trim($apovolesStr);
             }
             // απουσίες ημέρας ΤΕΛΟΣ
+
             // σύνολο απουσιών
-            $apousiesAll = $student->apousies->pluck('apousies', 'date')->toArray();
-            $apovolesAll = $student->apousies->pluck('apovoles', 'date')->toArray();
-            //ksort($apousiesAll);
-            //ksort($apovolesAll);
-            //krsort($apousiesAll);
-            //krsort($apovolesAll);
             $totApou = 0;
             $totApov = 0;
-            $tableData = "<table style=' border: 1px solid lightgrey;border-collapse: collapse;' ><tr><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>Ημ/νία</th><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>Συν</th><th>πμ</th>$tableHeadStr</tr>";
-            foreach ($apousiesAll as $d => $value) {
-                $d2show = Carbon::createFromFormat('Ymd', $d)->format('d/m/y');
-                $sumApou = array_sum(preg_split('//', $value)) > 0 ? array_sum(preg_split('//', $value)) : null;
-                $totApou += $sumApou;
-                $sumApov = array_sum(preg_split('//', $apovolesAll[$d])) > 0 ? array_sum(preg_split('//', $apovolesAll[$d])) : null;
-                $totApov += $sumApov;
-                $tableBodyStr = "<tr><td style=' border: 1px solid lightgrey;border-collapse: collapse;text-align: center'>$d2show</td><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>$sumApou</td><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>$sumApov</td>";
-                for ($i = 0; $i < $numOfHours; $i++) {
-                    
-                    $cellStr = substr($value,$i,1)=="1" ? "+" : "";
-                    if($apovolesAll[$d] && $apovolesAll[$d][$i]=="1"){
-                        $tableBodyStr .= "<th style=' border: 1px solid lightgrey;border-collapse: collapse;background: #ffab9a '>";
-                    }else{
-                        $tableBodyStr .= "<th style=' border: 1px solid lightgrey;border-collapse: collapse;'>";
+            $tableData = "";
+
+            if(config('gth.emails.informForTotalApousies')){
+
+                $apousiesAll = $student->apousies->pluck('apousies', 'date')->toArray();
+                $apovolesAll = $student->apousies->pluck('apovoles', 'date')->toArray();
+                //ksort($apousiesAll);
+                //ksort($apovolesAll);
+                //krsort($apousiesAll);
+                //krsort($apovolesAll);
+                $totApou = 0;
+                $totApov = 0;
+                $tableData = "<table style=' border: 1px solid lightgrey;border-collapse: collapse;' ><tr><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>Ημ/νία</th><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>Συν</th><th>πμ</th>$tableHeadStr</tr>";
+                foreach ($apousiesAll as $d => $value) {
+                    $d2show = Carbon::createFromFormat('Ymd', $d)->format('d/m/y');
+                    $sumApou = array_sum(preg_split('//', $value)) > 0 ? array_sum(preg_split('//', $value)) : null;
+                    $totApou += $sumApou;
+                    $sumApov = array_sum(preg_split('//', $apovolesAll[$d])) > 0 ? array_sum(preg_split('//', $apovolesAll[$d])) : null;
+                    $totApov += $sumApov;
+                    $tableBodyStr = "<tr><td style=' border: 1px solid lightgrey;border-collapse: collapse;text-align: center'>$d2show</td><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>$sumApou</td><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>$sumApov</td>";
+                    for ($i = 0; $i < $numOfHours; $i++) {
+
+                        $cellStr = substr($value, $i, 1) == "1" ? "+" : "";
+                        if ($apovolesAll[$d] && $apovolesAll[$d][$i] == "1") {
+                            $tableBodyStr .= "<th style=' border: 1px solid lightgrey;border-collapse: collapse;background: #ffab9a '>";
+                        } else {
+                            $tableBodyStr .= "<th style=' border: 1px solid lightgrey;border-collapse: collapse;'>";
+                        }
+                        $tableBodyStr .= $cellStr;
+                        $tableBodyStr .= "</th>";
                     }
-                    $tableBodyStr .= $cellStr;
-                    $tableBodyStr .= "</th>";
+                    $tableData .= $tableBodyStr;
                 }
-                $tableData .= $tableBodyStr;
+                $tableData .= '</table>';
             }
-            $tableData .= '</table>';
             // σύνολο απουσιών ΤΕΛΟΣ
+            
             if (!$student->email) continue;
             $emailData[] = [
                 'email' => $student->email,
