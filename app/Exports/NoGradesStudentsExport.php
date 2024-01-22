@@ -51,7 +51,7 @@ class NoGradesStudentsExport implements FromCollection, WithHeadings, ShouldAuto
                 $anatheseis = Anathesi::whereTmima($tmima['tmima']);
                 if(auth()->user()->permissions['teacher']){
                     $anatheseis = $anatheseis->whereHas('users', function ($query) {
-                        $query->where('id', Auth::user()->id);
+                        $query->where('id', auth()->user()->id);
                     });
                 }
                 $anatheseis = $anatheseis->with('users:id,name')->orderby('mathima')->get();

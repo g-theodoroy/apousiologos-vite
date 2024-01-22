@@ -105,7 +105,7 @@ class GradesService {
             $anatheseisCount = Anathesi::count();
         } else{
             $insertedAnatheseisCount = Grade::where('period_id', $activeGradePeriod)->whereIn('anathesi_id', auth()->user()->anatheseis()->pluck('id'))->distinct('anathesi_id')->count();
-            $anatheseisCount = Anathesi::where('user_id', auth()->user()->id)->count();
+            $anatheseisCount = Anathesi::whereRelation('users', 'id', auth()->user()->id)->count();
         }
         $infoInsertedAnatheseis = $insertedAnatheseisCount ? "$insertedAnatheseisCount από $anatheseisCount" : "";
         $infoNotInsertedAnatheseis = $anatheseisCount - $insertedAnatheseisCount; 

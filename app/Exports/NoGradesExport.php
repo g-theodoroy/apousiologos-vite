@@ -58,7 +58,7 @@ class NoGradesExport implements FromCollection, WithHeadings, ShouldAutoSize, Wi
         }
         if(auth()->user()->permissions['teacher']){
             $anatheseis = $anatheseis->whereHas('users', function ($query) {
-                $query->where('id', Auth::user()->id);
+                $query->where('id', auth()->user()->id);
             });
         }
         $anatheseis = $anatheseis->with('users:id,name')->get()->toArray();
