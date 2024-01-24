@@ -555,7 +555,11 @@ export default {
           newValue = !apouForm[id]['apou'][loopIndex];
         }
         apouForm[id]['apou'][loopIndex] = newValue;
-        if(newValue == false) apouForm[id]['apov'][loopIndex] = newValue;
+        apouForm[id]['teach'][loopIndex] = usePage().props.value.auth.user.id;
+        if(newValue == false) {
+          apouForm[id]['apov'][loopIndex] = newValue;
+          apouForm[id]['teach'][loopIndex] = null;
+        }
       }
     }
   
@@ -572,7 +576,10 @@ export default {
           }
         }
         apouForm[id]['apov'][loopIndex] = newValue;
-        if(newValue == true) apouForm[id]['apou'][loopIndex] = newValue;
+        if(newValue == true) {
+          apouForm[id]['apou'][loopIndex] = newValue;
+          apouForm[id]['teach'][loopIndex] = usePage().props.value.auth.user.id;
+        }
       }
     }
   
