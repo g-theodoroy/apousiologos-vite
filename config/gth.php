@@ -61,7 +61,13 @@ return [
             'showOtherGrades',
             'allowExams',
             'allowTeachersEmail',
-        ]
+    ],
 
+    /**
+     *  στα διαγωνίσματα για τον διαχειριστη
+     *  επιτρέπονται όλα τα τμήματα
+     *  είτε έχουν είτε δεν έχουν διαγώνισμα
+     */
+    'examsAdminAllowAllTmimata' => false
 
 ];

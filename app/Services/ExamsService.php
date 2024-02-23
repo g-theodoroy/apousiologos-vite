@@ -177,21 +177,33 @@ class ExamsService {
         $studentsForTmima = $this->studentsForTmima();
 
         $maxDiagonismataForDay = Setting::getValueOf('maxDiagonismataForDay');
+        // Αν το μάθημα είναι ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ
+        // αυξάνω τον αριθμό για να μη χτυπάει και να επιτρέψει την αλλαγή
+        if ($event->mathima == 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ') $maxDiagonismataForDay++;
         $maxDiagonismataForWeek = Setting::getValueOf('maxDiagonismataForWeek');
         // Αν η αλλαγή διαγωνίσματος είναι μέσα στην ίδια εβδομάδα οπότε μετράει και το δικό μου διαγώνισμα
         // αυξάνω τον αριθμό για να μη χτυπάει και να επιτρέψει την αλλαγή
         if ($startOfWeekOld == $startOfWeek) $maxDiagonismataForWeek++;
+        // Αν το μάθημα είναι ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ
+        // αυξάνω τον αριθμό για να μη χτυπάει και να επιτρέψει την αλλαγή
+        if ($event->mathima == 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ') $maxDiagonismataForWeek++;
 
 
         // βρίσκω ποια μαθητές έχουν διαγώνισμα σήμερα
-        $tmimata = Event::where('date', $dbDate)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->select('tmima1', 'tmima2')->get();
+        $tmimata = Event::where('date', $dbDate)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->where('mathima', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ')->select('tmima1', 'tmima2')->get();
         $withDiagonismaForDay = collect($tmimata->toArray())->all();
         // βρίσκω ποιοι μαθητές έχουν ήδη ένα προγραμματισμένο διαγώνισμα την ημέρα
         $studentsWithDiagonismataForDay = $this->studentsWithMaxDiagonismata($withDiagonismaForDay, $maxDiagonismataForDay);
 
+        // βρίσκω ποια μαθητές απαγορεύεται να έχουν διαγώνισμα σήμερα
+        $tmimata = Event::where('date', $dbDate)->where('mathima', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ')->select('tmima1', 'tmima2')->get();
+        $withForbidenDiagonismaForDay = collect($tmimata->toArray())->all();
+        // βρίσκω ποιοι μαθητές έχουν ήδη ένα προγραμματισμένο διαγώνισμα την ημέρα
+        $studentsWithForbidenDiagonismataForDay = $this->studentsWithMaxDiagonismata($withForbidenDiagonismaForDay, $maxDiagonismataForDay);
+
 
         // βρίσκω ποια τμήματα έχουν διαγώνισμα την εβδομάδα
-        $tmimata = Event::where('date', '>=',  $startOfWeek)->where('date', '<=',  $endOfWeek)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->select('tmima1', 'tmima2')->get();
+        $tmimata = Event::where('date', '>=',  $startOfWeek)->where('date', '<=',  $endOfWeek)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->where('mathima', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ')->select('tmima1', 'tmima2')->get();
         $withDiagonismaForWeek = collect($tmimata->toArray())->all();
         // βρίσκω ποιοι μαθητές έχουν προγραμματισμένα συνολικά πάνω από τα επιτρεπόμενα διαγωνίσματα (3) την εβδομάδα
         $studentsWithMaxDiagonismataForWeek = $this->studentsWithMaxDiagonismata($withDiagonismaForWeek, $maxDiagonismataForWeek);
@@ -205,6 +217,17 @@ class ExamsService {
             }
             return $message;
         }
+
+        if (count(array_intersect($studentsForTmima[$tmima1], $studentsWithForbidenDiagonismataForDay)) || ($tmima2 && count(array_intersect($studentsForTmima[$tmima2], $studentsWithForbidenDiagonismataForDay)))) {
+            $message = 'Δεν μπορείτε να μεταθέσετε το διαγώνισμα "' . $event->title . '" από τις ' . $dateShowOld . ' στις ' . $dateShow . ' γιατί ';
+            if ($tmima2) {
+                $message .= 'τουλάχιστον σε ένα από τα τμήματα ' . $tmima1 . '-' . $tmima2 . ' δεν επιτρέπεται να μπεί διαγώνισμα.';
+            } else {
+                $message .= 'στo τμήμα ' . $tmima1 . ' δεν επιτρέπεται να μπεί διαγώνισμα.';
+            }
+            return $message;
+        }
+
 
         if (count(array_intersect($studentsForTmima[$tmima1], $studentsWithMaxDiagonismataForWeek)) || ($tmima2 && count(array_intersect($studentsForTmima[$tmima2], $studentsWithMaxDiagonismataForWeek)))) {
             $message = 'Δεν μπορείτε να μεταθέσετε το διαγώνισμα "' . $event->title . '" από τις ' . $dateShowOld . ' στις ' . $dateShow . ' γιατί ';
@@ -294,14 +317,28 @@ class ExamsService {
         $maxDiagonismataForWeek = Setting::getValueOf('maxDiagonismataForWeek');
 
         // βρίσκω ποια τμήματα έχουν διαγώνισμα σήμερα
-        $tmimata = Event::where('date', $date)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->select('tmima1', 'tmima2')->get();
+        if (Auth::user()->permissions['admin']){
+            $tmimata = Event::where('date', $date)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->where('mathima', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ')->select('tmima1', 'tmima2')->get();
+        }else{
+            $tmimata = Event::where('date', $date)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->select('tmima1', 'tmima2')->get();
+        }
         $withDiagonismaForDay = collect($tmimata->toArray())->all();
+
+        if(config('examsAdminAllowAllTmimata')){
+            if (Auth::user()->permissions['admin']) $withDiagonismaForDay = [];
+        }
+
         // βρίσκω ποιοι μαθητές έχουν ήδη ένα προγραμματισμένο διαγώνισμα την ημέρα
         $studentsWithDiagonismataForDay = $this->studentsWithMaxDiagonismata($withDiagonismaForDay, $maxDiagonismataForDay);
 
         // βρίσκω ποια τμήματα έχουν διαγώνισμα την εβδομάδα
-        $tmimata = Event::where('date', '>=',  $startOfWeek)->where('date', '<=',  $endOfWeek)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->select('tmima1', 'tmima2')->get();
+        $tmimata = Event::where('date', '>=',  $startOfWeek)->where('date', '<=',  $endOfWeek)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->where('mathima', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ')->select('tmima1', 'tmima2')->get();
         $withDiagonismaForWeek = collect($tmimata->toArray())->all();
+        
+        if(config('examsAdminAllowAllTmimata')){
+            if (Auth::user()->permissions['admin']) $withDiagonismaForWeek = [];
+        }
+
         // βρίσκω ποιοι μαθητές έχουν προγραμματισμένα συνολικά πάνω από τα επιτρεπόμενα διαγωνίσματα (3) την εβδομάδα
         $studentsWithMaxDiagonismataForWeek = $this->studentsWithMaxDiagonismata($withDiagonismaForWeek, $maxDiagonismataForWeek);
 
@@ -414,6 +451,8 @@ class ExamsService {
         }
 
         $mathimata = $mathimata->distinct()->orderBy('mathima')->pluck('mathima')->toArray();
+
+        if (Auth::user()->permissions['admin']) array_unshift($mathimata,'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ');
 
         return $mathimata;
     }

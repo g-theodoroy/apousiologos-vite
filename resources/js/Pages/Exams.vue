@@ -807,6 +807,8 @@ export default {
       if (this.gridMode) {
         if (exam.tmima1 == "ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ")
           return "text-white bg-red-500 hover:bg-red-700";
+        if (exam.mathima == "ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ")
+          return "text-white bg-red-500 hover:bg-red-700";
         if (
           exam.date.replace(/-/g, "") <
             new Date().toISOString().split("T")[0].replace(/-/g, "") &&
@@ -833,6 +835,8 @@ export default {
           return "text-white bg-gray-500 hover:bg-gray-700";
       } else {
         if (exam.tmima1 == "ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ")
+          return "text-white bg-red-500 hover:bg-red-700 md:ml-24 ";
+          if (exam.mathima == "ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ")
           return "text-white bg-red-500 hover:bg-red-700 md:ml-24 ";
         if (
           exam.date.replace(/-/g, "") <
