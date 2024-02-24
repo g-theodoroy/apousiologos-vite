@@ -4,21 +4,10 @@
   <BreezeAuthenticatedLayout>
     <template #header>
       <div
-        class="
-          flex flex-col
-          sm:flex-row
-          space-y-4
-          sm:space-y-0 sm:justify-between
-        "
+        class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:justify-between"
       >
         <div
-          class="
-            text-center
-            md:text-left
-            font-semibold
-            text-xl text-gray-800
-            leading-tight
-          "
+          class="text-center md:text-left font-semibold text-xl text-gray-800 leading-tight"
         >
           Διαγωνίσματα
         </div>
@@ -51,17 +40,7 @@
             </GthSuccess>
             <GthError property="error" />
             <div
-              class="
-                font-bold
-                text-xl
-                p-4
-                flex
-                space-x-2 space-y-2
-                flex-col
-                md:flex-row md:space-y-0
-                items-center
-                justify-center
-              "
+              class="font-bold text-xl p-4 flex space-x-2 space-y-2 flex-col md:flex-row md:space-y-0 items-center justify-center"
             >
               <span>{{ selectedMonth }}</span>
               <div class="flex space-x-2">
@@ -131,13 +110,7 @@
               <div
                 v-for="date in this.dateValues"
                 :key="date.date"
-                class="
-                  min-h-20
-                  border border-gray-300
-                  bg-white
-                  hover:border-blue-500
-                  rounded
-                "
+                class="min-h-20 border border-gray-300 bg-white hover:border-blue-500 rounded"
                 :class="{
                   'md:min-h-12': !this.gridMode,
                   hidden: parseInt(date.date.substr(5, 2)) !== month,
@@ -194,17 +167,7 @@
             </div>
             <!-- ΕΠΙΚΕΦΑΛΙΔΕΣ ΠΑΛΙ -->
             <div
-              class="
-                font-bold
-                text-xl
-                p-4
-                flex
-                space-x-2 space-y-2
-                flex-col
-                md:flex-row md:space-y-0
-                items-center
-                justify-center
-              "
+              class="font-bold text-xl p-4 flex space-x-2 space-y-2 flex-col md:flex-row md:space-y-0 items-center justify-center"
             >
               <span>{{ selectedMonth }}</span>
               <div class="flex space-x-2">
@@ -266,17 +229,7 @@
     v-if="examsIsOpen.open"
   >
     <div
-      class="
-        flex
-        items-end
-        justify-center
-        min-h-screen
-        pt-4
-        px-4
-        pb-20
-        text-center
-        sm:block sm:p-0
-      "
+      class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
     >
       <div class="fixed inset-0 transition-opacity">
         <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
@@ -287,18 +240,7 @@
       <span class="hidden sm:inline-block sm:align-middle sm:h-screen"></span>​
 
       <div
-        class="
-          inline-block
-          align-bottom
-          bg-white
-          rounded-lg
-          text-left
-          overflow-hidden
-          shadow-xl
-          transform
-          transition-all
-          sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full
-        "
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full"
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-headline"
@@ -319,16 +261,7 @@
           {{ this.examsForm.title }}
         </div>
         <div
-          class="
-            grid grid-cols-3
-            sm:grid-cols-6
-            gap-4
-            bg-white
-            px-4
-            pt-5
-            pb-4
-            sm:p-6 sm:pb-4
-          "
+          class="grid grid-cols-3 sm:grid-cols-6 gap-4 bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4"
         >
           <span class="sm:col-start-3 items-center">Ημνια</span>
           <BreezeInput
@@ -350,21 +283,7 @@
             :value="examsForm.tmima1"
             :disabled="this.examsEditMode"
             @change="setTmima2Values($event)"
-            class="
-              border-gray-300
-              focus:border-indigo-300
-              focus:ring
-              focus:ring-indigo-200
-              focus:ring-opacity-100
-              rounded-md
-              shadow-sm
-              sm:px-2
-              w-full
-              p-1
-              col-span-2
-              border
-              disabled:opacity-50
-            "
+            class="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-100 rounded-md shadow-sm sm:px-2 w-full p-1 col-span-2 border disabled:opacity-50"
           >
             <option value=""></option>
             <option v-for="item in tmimata.tmima1" :key="item" :value="item">
@@ -376,21 +295,7 @@
             v-model="examsForm.tmima2"
             :value="examsForm.tmima2"
             :disabled="!examsForm.tmima1 || this.examsEditMode"
-            class="
-              border-gray-300
-              focus:border-indigo-300
-              focus:ring
-              focus:ring-indigo-200
-              focus:ring-opacity-100
-              rounded-md
-              shadow-sm
-              sm:px-2
-              w-full
-              p-1
-              col-span-2
-              border
-              disabled:opacity-50
-            "
+            class="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-100 rounded-md shadow-sm sm:px-2 w-full p-1 col-span-2 border disabled:opacity-50"
           >
             <option value=""></option>
             <option v-for="item in tmimata.tmima2" :key="item" :value="item">
@@ -401,23 +306,8 @@
           <select
             v-model="examsForm.mathima"
             :value="examsForm.mathima"
-            :disabled="this.examsEditMode"
-            class="
-              border-gray-300
-              focus:border-indigo-300
-              focus:ring
-              focus:ring-indigo-200
-              focus:ring-opacity-100
-              rounded-md
-              shadow-sm
-              sm:px-2
-              w-full
-              p-1
-              col-span-2
-              sm:col-span-5
-              border
-              disabled:opacity-50
-            "
+            :disabled="this.examsEditMode || this.mathimataLock"
+            class="border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-100 rounded-md shadow-sm sm:px-2 w-full p-1 col-span-2 sm:col-span-5 border disabled:opacity-50"
           >
             <option value=""></option>
             <option v-for="item in mathimata" :key="item" :value="item">
@@ -470,17 +360,7 @@
     v-if="showIsOpen.open"
   >
     <div
-      class="
-        flex
-        items-end
-        justify-center
-        min-h-screen
-        pt-4
-        px-4
-        pb-20
-        text-center
-        sm:block sm:p-0
-      "
+      class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
     >
       <div class="fixed inset-0 transition-opacity">
         <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
@@ -491,18 +371,7 @@
       <span class="hidden sm:inline-block sm:align-middle sm:h-screen"></span>​
 
       <div
-        class="
-          inline-block
-          align-bottom
-          bg-white
-          rounded-lg
-          text-left
-          overflow-hidden
-          shadow-xl
-          transform
-          transition-all
-          md:my-8 md:align-middle md:max-w-2xl md:w-full
-        "
+        class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all md:my-8 md:align-middle md:max-w-2xl md:w-full"
         :class="{
           'lg:max-w-4xl': $page.props.auth.user.permissions.admin,
         }"
@@ -511,15 +380,7 @@
         aria-labelledby="modal-headline"
       >
         <div
-          class="
-            font-semibold
-            text-xl
-            bg-gray-100
-            rounded-t-md
-            mx-4
-            mt-4
-            p-4
-          "
+          class="font-semibold text-xl bg-gray-100 rounded-t-md mx-4 mt-4 p-4"
         >
           Τα διαγωνίσματά μου
         </div>
@@ -647,6 +508,7 @@ export default {
     formExams: Object,
     noExams: Object,
     initGridmode: Number,
+    examsAdminAllowAllTmimata: Boolean,
   },
   components: {
     BreezeAuthenticatedLayout,
@@ -663,6 +525,7 @@ export default {
     const showIsOpen = reactive({ open: false });
     const userExams = reactive({ data: [] });
     const examsEditMode = ref(false);
+    const mathimataLock = ref(false);
     const tmimata = reactive({ tmima1: [], tmima2: [] });
     const examsForm = useForm(props.formExams);
     const errMsg = reactive({ msg: "" });
@@ -724,6 +587,25 @@ export default {
     }
 
     function setTmima2Values(event) {
+      if (!props.examsAdminAllowAllTmimata) {
+        // ελεγχω αν το επιλεγμένο τμήμα έχει διαγώνισμα την ημέρα
+        // και επιτρέπω μόνο την εισαγωγή "ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ"
+        if (props.exams[this.examsForm.date]) {
+          if (
+            props.exams[this.examsForm.date]
+              .filter((item) => item.mathima != "ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ")
+              .filter((item) => item.tmima1 == event.target.value).length
+          ) {
+            this.examsForm.mathima = "ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ";
+            this.mathimataLock = true;
+          } else {
+            this.examsForm.mathima = "";
+            this.mathimataLock = false;
+          }
+        }
+      }
+      // γεμίζω το select tmima2 με τις τιμές
+      // εκτός της επιλεγμένης στο tmima1
       this.tmimata.tmima2 = [];
       if (event.target.value) {
         Object.keys(this.tmimata.tmima1).forEach((key) => {
@@ -778,10 +660,12 @@ export default {
 
     function onDrop(evt, date) {
       if (date == this.oldDate) return;
-      if(
-        !usePage().props.value.auth.user.permissions.admin && 
-        usePage().props.value.auth.user.id != JSON.parse(evt.dataTransfer.getData('exam')).user_id
-        ) return;
+      if (
+        !usePage().props.value.auth.user.permissions.admin &&
+        usePage().props.value.auth.user.id !=
+          JSON.parse(evt.dataTransfer.getData("exam")).user_id
+      )
+        return;
       if (
         !usePage().props.value.auth.user.permissions.admin &&
         props.noExams[date]
@@ -836,7 +720,7 @@ export default {
       } else {
         if (exam.tmima1 == "ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ")
           return "text-white bg-red-500 hover:bg-red-700 md:ml-24 ";
-          if (exam.mathima == "ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ")
+        if (exam.mathima == "ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ")
           return "text-white bg-red-500 hover:bg-red-700 md:ml-24 ";
         if (
           exam.date.replace(/-/g, "") <
@@ -968,6 +852,7 @@ export default {
       examsIsOpen,
       showIsOpen,
       examsEditMode,
+      mathimataLock,
       examsForm,
       errMsg,
       setBgColor,
