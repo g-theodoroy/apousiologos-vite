@@ -109,8 +109,7 @@ class ExamsService {
             'exams' => $exams,
             'noExams' => $noExams,
             'formExams' => $formExams,
-            'initGridmode' => intval($gridMode),
-            'examsAdminAllowAllTmimata' => config('gth.examsAdminAllowAllTmimata')
+            'initGridmode' => intval($gridMode)
         ];
  
     }
@@ -319,13 +318,15 @@ class ExamsService {
 
         // βρίσκω ποια τμήματα έχουν διαγώνισμα σήμερα
         if (Auth::user()->permissions['admin']){
-            //$tmimata = Event::where('date', $date)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->where('mathima', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ')->select('tmima1', 'tmima2')->get();
-            $tmimata = collect([]);
+            $tmimata = Event::where('date', $date)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->where('mathima', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑ')->select('tmima1', 'tmima2')->get();
         }else{
             $tmimata = Event::where('date', $date)->where('tmima1', '!=', 'ΟΧΙ_ΔΙΑΓΩΝΙΣΜΑΤΑ')->select('tmima1', 'tmima2')->get();
         }
         $withDiagonismaForDay = collect($tmimata->toArray())->all();
 
+        if(config('examsAdminAllowAllTmimata')){
+            if (Auth::user()->permissions['admin']) $withDiagonismaForDay = [];
+        }
 
         // βρίσκω ποιοι μαθητές έχουν ήδη ένα προγραμματισμένο διαγώνισμα την ημέρα
         $studentsWithDiagonismataForDay = $this->studentsWithMaxDiagonismata($withDiagonismaForDay, $maxDiagonismataForDay);
