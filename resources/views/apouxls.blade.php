@@ -30,7 +30,7 @@
                 </td>
                 <td>&nbsp;</td>
                 <td>
-                    {{ array_sum(preg_split('//', $student['apousies'])) }}
+                    {{ $student['apousies'] }}
                 </td>
                 <td>&nbsp;</td>
                 <td>&nbsp;</td>

@@ -54,7 +54,8 @@ class ApousiesMyschoolImport implements OnEachRow, WithStartRow
         ]);
       } else {
         $apousies = $dayApousies->apousies;
-        $sumOfInserted = array_sum(preg_split("//", $apousies));
+        //$sumOfInserted = array_sum(str_split($apousies));
+        $sumOfInserted = substr_count($apousies , '1', 0, $totalHours) ;
         if ($numOfDay > $sumOfInserted) {
           //self::$daysWithApousies++;
           $diff = $numOfDay - $sumOfInserted;

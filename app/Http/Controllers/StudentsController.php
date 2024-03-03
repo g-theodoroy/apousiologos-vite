@@ -191,13 +191,13 @@ class StudentsController extends Controller
         $daysApovSum = 0;
         $aa = 1;
         foreach ($apousies as $apou) {
-          $daySum = array_sum(preg_split('//', $apou->apousies ?? '')) > 0 ? array_sum(preg_split('//', $apou->apousies ?? '')) : null;
-          $dayApovSum = array_sum(preg_split('//', $apou->apovoles ?? '')) > 0 ? array_sum(preg_split('//', $apou->apovoles ?? '')) : null;
+          $daySum =  substr_count($apou->apousies , '1', 0, $numOfHours)  ??  null;
+          $dayApovSum = substr_count($apou->apovoles , '1')  ??  null;
           $daysSum += $daySum;
           $daysApovSum += $dayApovSum;
           $arrApou = array();
           $num = 1;
-          foreach (str_split($apou->apousies) as $value) {
+          foreach (str_split(substr($apou->apousies,0,$numOfHours)) as $value) {
             $value == '1' ? $arrApou['apou'][$num] = true : $arrApou['apou'][$num] = false;
             $num++;
           }

@@ -11,6 +11,7 @@ use App\Models\Setting;
 use App\Models\Student;
 use App\Models\Anathesi;
 use App\Mail\ApousiesMail;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -120,7 +121,7 @@ class ApousiologosService {
                 // παίρνω όλα τα τμήματα και φτιάχνω string χωρισμένο με κόμμα (,)
                 'tmimata' => $tmimata->implode(', '),
                 // αν υπάρχουν απουσίες (sum > 0) τις παίρνω για την συγκεκριμμένη ημέρα  για το μαθητή. Μορφή: '1111000' 
-                'apousies' => array_sum(preg_split('//', $apousiesForDate[$stuApFoD->id] ?? '')) > 0 ? array_sum(preg_split('//', $apousiesForDate[$stuApFoD->id] ?? '')) : null
+                'apousies' => array_key_exists($stuApFoD->id, $apousiesForDate) ? substr_count($apousiesForDate[$stuApFoD->id] , '1', 0, $numOfHours) : null
             ];
             // αρχικοποίηση πίνακα για αποστολή email false
             $arrSendEmail[$stuApFoD->id] = false;
@@ -128,7 +129,7 @@ class ApousiologosService {
             if ($apousiesForDate[$stuApFoD->id] ?? false) {
                 $arrApou = array();
                 $num = 1;
-                foreach (str_split($apousiesForDate[$stuApFoD->id]) as $value) {
+                foreach (str_split(substr($apousiesForDate[$stuApFoD->id],0,$numOfHours)) as $value) {
                     $value == '1' ? $arrApou[$num] = true : $arrApou[$num] = false;
                     $num++;
                 }
@@ -297,11 +298,11 @@ class ApousiologosService {
             if (count($stuToSendEmail) && !in_array($student->id, $stuToSendEmail)) continue;
             // απουσίες ημέρας
             $apousiesForDate = $student->apousies->where('date', $date)->pluck('apousies', 'date');
-            $sumapp = array_sum(preg_split('//', $apousiesForDate[$date] ?? '')) > 0 ? array_sum(preg_split('//', $apousiesForDate[$date] ?? '')) : null;
+            $sumapp = Arr::exists($apousiesForDate, $date) ? substr_count($apousiesForDate[$date] , '1', 0, $numOfHours) : null;
             if (!$sumapp) continue;
             $num = 1;
             $hoursStr = '';
-            foreach (str_split($apousiesForDate[$date]) as $value) {
+            foreach (str_split(substr($apousiesForDate[$date],0,$numOfHours)) as $value) {
                 $value == '1' ?  $hoursStr .= $num . "η " : $hoursStr .= "__  ";
                 $num++;
             }
@@ -337,9 +338,10 @@ class ApousiologosService {
                 $tableData = "<table style=' border: 1px solid lightgrey;border-collapse: collapse;' ><tr><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>Ημ/νία</th><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>Συν</th><th>πμ</th>$tableHeadStr</tr>";
                 foreach ($apousiesAll as $d => $value) {
                     $d2show = Carbon::createFromFormat('Ymd', $d)->format('d/m/y');
-                    $sumApou = array_sum(preg_split('//', $value)) > 0 ? array_sum(preg_split('//', $value)) : null;
+                    $sumApou = substr_count($value , '1', 0, $numOfHours) ?? null;
                     $totApou += $sumApou;
-                    $sumApov = array_sum(preg_split('//', $apovolesAll[$d])) > 0 ? array_sum(preg_split('//', $apovolesAll[$d])) : null;
+                    
+                    $sumApov = substr_count($apovolesAll[$d] , '1') > 0 ? substr_count($apovolesAll[$d] , '1') : null;
                     $totApov += $sumApov;
                     $tableBodyStr = "<tr><td style=' border: 1px solid lightgrey;border-collapse: collapse;text-align: center'>$d2show</td><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>$sumApou</td><th style=' border: 1px solid lightgrey;border-collapse: collapse;'>$sumApov</td>";
                     for ($i = 0; $i < $numOfHours; $i++) {

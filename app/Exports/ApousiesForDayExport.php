@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\Program;
 use Illuminate\Contracts\View\View;
 use Maatwebsite\Excel\Concerns\FromView;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -40,6 +41,7 @@ class ApousiesForDayExport implements FromView, ShouldAutoSize, WithEvents
         $apoDate = $this->apoDate;
         $eosDate = $this->eosDate;
         $nowDate = Carbon::now()->format("Ymd");
+        $numOfHours = Program::getNumOfHours();
 
         if ($apoDate !== '' && $eosDate !== '') {
             // βρίσκω τους μαθητές που έχουν απουσίες την συγκεκριμμένη ημέρα
@@ -86,7 +88,7 @@ class ApousiesForDayExport implements FromView, ShouldAutoSize, WithEvents
                     'tmima' => $student['tmima'],
                     'tmimata' => $student['tmimata'],
                     'date' => Carbon::createFromFormat("!Ymd", $date)->format("d/m/y"),
-                    'apousies' => $value
+                    'apousies' => substr_count($value,'1', 0, $numOfHours)
                 ];
             }
         }
