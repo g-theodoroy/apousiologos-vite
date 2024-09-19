@@ -242,6 +242,7 @@ class StudentsController extends Controller
     }
     $formStudents = [
       'id' => '',
+      'oldId' => '',
       'eponimo' => '',
       'onoma' => '',
       'patronimo' => '',
@@ -284,16 +285,28 @@ class StudentsController extends Controller
     } else {
       $message = "Επιτυχής καταχώριση μαθητή/τριας";
     }
+    if (! $request->oldId){
+      $student = Student::create(
+        [ 'id' => $request->id,
+          'eponimo' => $request->eponimo,
+          'onoma' => $request->onoma,
+          'patronimo' => $request->patronimo,
+          'email' => $request->email
+        ]
+      );
+      } else{
+      $student = Student::find($request->oldId);
+      $student->update(
+        [ 'id' => $request->id,
+          'eponimo' => $request->eponimo,
+          'onoma' => $request->onoma,
+          'patronimo' => $request->patronimo,
+          'email' => $request->email
+        ]
+      );
+ 
+    }
 
-    $student = Student::updateOrCreate(
-      ['id' => $request->id],
-      [
-        'eponimo' => $request->eponimo,
-        'onoma' => $request->onoma,
-        'patronimo' => $request->patronimo,
-        'email' => $request->email
-      ]
-    );
     Tmima::where('student_id', $student->id)->delete();
 
     foreach ($request->tmima as $tmima) {
@@ -315,10 +328,6 @@ class StudentsController extends Controller
   public function delete($id)
   {
     Student::where('id', $id)->delete();
-    Tmima::where('student_id', $id)->delete();
-    Apousie::where('student_id', $id)->delete();
-    Anathesi::where('student_id', $id)->delete();
-    Grade::where('student_id', $id)->delete();
     return redirect()->back()->with(['message' => "Επιτυχής διαγραφή μαθητή/τριας"]);
   }
 

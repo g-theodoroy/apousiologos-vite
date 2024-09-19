@@ -20,7 +20,8 @@ class CreateEventsTable extends Migration
             $table->string('tmima1')->nullable();
             $table->string('tmima2')->nullable();
             $table->string('mathima')->nullable();
-            $table->integer('user_id');
+            //$table->integer('user_id');
+            $table->foreignId('user_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
         });
     }

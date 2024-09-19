@@ -3,7 +3,7 @@
 
   <div
     class="relative flex items-top justify-center min-h-screen bg-cover"
-    style="background-image: url('public/images/background.png')"
+    style="background-image: url('images/background.png')"
   >
     <div v-if="canLogin" class="fixed top-0 right-0 pr-8 pt-4 sm:block">
       <Link

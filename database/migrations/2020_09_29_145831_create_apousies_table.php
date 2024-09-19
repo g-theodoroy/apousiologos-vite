@@ -15,7 +15,8 @@ class CreateApousiesTable extends Migration
     {
         Schema::create('apousies', function (Blueprint $table) {
             $table->id();
-            $table->integer('student_id')->unsigned();
+            $table->foreignId('student_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            //$table->integer('student_id')->unsigned();
             $table->integer('date')->unsigned();
             $table->string('apousies');
             $table->string('apovoles');

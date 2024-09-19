@@ -17,7 +17,8 @@ class CreateGradesTable extends Migration
             $table->id();
             $table->string('grade');
             $table->integer('anathesi_id');
-            $table->integer('student_id');
+            $table->foreignId('student_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            //$table->integer('student_id')->unsigned();
             $table->integer('period_id');
             $table->timestamps();
         });

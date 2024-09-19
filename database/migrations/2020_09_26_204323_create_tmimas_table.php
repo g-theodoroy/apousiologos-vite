@@ -15,7 +15,8 @@ class CreateTmimasTable extends Migration
     {
         Schema::create('tmimas', function (Blueprint $table) {
             $table->id();
-            $table->integer('student_id')->unsigned();
+            $table->foreignId('student_id')->constrained()->onUpdate('cascade')->onDelete('cascade');
+            //$table->integer('student_id')->unsigned();
             $table->string('tmima');
             $table->timestamps();
         });

@@ -561,7 +561,6 @@
           <span class="sm:col-start-3">Α.Μ.</span>
           <BreezeInput
             v-model="stuForm.id"
-            :disabled="this.stuEditMode"
             class="w-full p-1 text-center"
             :class="{
               border: !this.stuEditMode,
@@ -846,6 +845,7 @@ export default {
       if (student) {
         this.stuEditMode = true;
         this.stuForm.id = student.id;
+        this.stuForm.oldId = student.id;
         this.stuForm.eponimo = student.eponimo;
         this.stuForm.onoma = student.onoma;
         this.stuForm.patronimo = student.patronimo;
@@ -948,7 +948,8 @@ export default {
         this.errMsg.msg = `Το email "${this.stuForm.email}" δεν είναι έγκυρο`;
         return;
       }
-      if (this.stuEditMode) {
+
+      if (this.stuForm.id == this.stuForm.oldId) {
         stuForm.post(route("students.store"), { preserveScroll: true });
         this.stuForm.reset();
         this.stuIsOpen.open = false;
