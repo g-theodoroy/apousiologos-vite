@@ -56,6 +56,10 @@ class AdminKathigitesController extends Controller
     {
         $delKathigitesCount = User::count() - 1;
         $firstUser = User::first();
+        $users = User::all();
+        foreach($users as $user){
+            $user->anatheseis()->detach();
+        }
         User::truncate();
         Anathesi::truncate();
         User::create([
